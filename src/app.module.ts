@@ -6,8 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from './mailer/mailer.module';
 import { UserModule } from './user/user.module';
 import { ProfilesModule } from './profiles/profiles.module';
-import { TagsModule } from './tags/tags.module';
 import { AuthModule } from './auth/auth.module';
+import { UniversitiesModule } from './universities/universities.module';
+import { SmokingStatusModule } from './smoking_status/smoking_status.module';
+import { SocialPrefsModule } from './social_prefs/social_prefs.module';
+import { ParticipationTermsModule } from './participation_terms/participation_terms.module';
+import { RegionsModule } from './regions/regions.module';
+import { MeetingTypesModule } from './meeting_types/meeting_types.module';
+import { MajorModule } from './major/major.module';
+import { CollabStyleModule } from './collab_style/collab_style.module';
 
 @Module({
   imports: [
@@ -26,9 +33,16 @@ import { AuthModule } from './auth/auth.module';
       synchronize: false,
     }),
     MailerModule,
+    UniversitiesModule,
+    SmokingStatusModule,
+    SocialPrefsModule,
+    ParticipationTermsModule,
+    RegionsModule,
+    MeetingTypesModule,
+    MajorModule,
+    CollabStyleModule,
     UserModule,
     ProfilesModule,
-    TagsModule,
     AuthModule,
   ],
   controllers: [AppController],

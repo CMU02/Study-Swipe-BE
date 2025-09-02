@@ -1,16 +1,19 @@
 import { Profiles } from 'src/profiles/profiles.entity';
 import {
-    BeforeInsert,
+  BeforeInsert,
   BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Universities } from 'src/universities/universities.entity';
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -23,15 +26,11 @@ export class User {
   @Column()
   password: string;
 
-  // 대학교 이메일 주소
-  @Column()
-  university_domain: string;
-
-  // 대학교 이메일 인증/미인증 여부
+  // 이메일 인증/미인증 여부 기본(미인증)
   @Column({ default: false })
-  university_verified: boolean;
+  email_verified: boolean;
 
-  // 대학교 이메일 인증 시간
+  // 이메일 인증 시간
   @Column({ type: 'timestamp', nullable: true })
   email_verified_at: Date;
 
@@ -39,9 +38,15 @@ export class User {
   @CreateDateColumn({ type: 'timestamp' })
   create_at: Date;
 
+  // 프로필
   @OneToOne(() => Profiles, (profiles) => profiles.user)
   profiles: Profiles;
 
+  // 대학 정보
+  @ManyToOne(() => Universities, (university) => university)
+  @JoinColumn()
+  universities: Universities 
+  
   /**
    * 비밀번호 해싱 메서드 추가
    */

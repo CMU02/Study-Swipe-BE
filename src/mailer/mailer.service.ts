@@ -18,7 +18,7 @@ export class MailerService {
   private readonly logger = new Logger(MailerService.name);
   private transporter: Transporter;
 
-  constructor(private verificationStore: VerificationStore) {
+  constructor() {
     this.createTransporter();
   }
 
@@ -58,7 +58,7 @@ export class MailerService {
 
     const response = await this.transporter.sendMail({
       from,
-      to: 'hyeonjun1968@naver.com',
+      to: 'jeonjh0321@naver.com',
       subject: 'Nice to meet you!',
       html: `<h1>Hello World</h1>`
     })

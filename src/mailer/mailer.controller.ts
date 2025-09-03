@@ -10,6 +10,6 @@ export class MailerController {
 
   @Post()
   async sendMailForm() {
-    return await this.mailerService.sendMail();
+    return await this.mailerService.sendMailTest();
   }
 }

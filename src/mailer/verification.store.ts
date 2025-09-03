@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { VerificationRecord } from "./types/mailer.types";
 
 /**
  * 인증코드 유효 시간(초) 
@@ -11,27 +12,20 @@ const VERIFICATION_CODE_TTL_SEC = 300;
  */
 const VERIFICATION_COOLDOWN_SEC = 60;
 
-type VerificationRecord = {
-    code: string; // 실제 6자리 인증코드
-    expiresAtMs: number; // 코드 만료 시각
-    cooldownExpiresAtMs: number; // 재발송 쿨다운 만료 시각
-}
-
 @Injectable()
 export class VerificationStore {
     private readonly logger = new Logger(VerificationStore.name);
     private memoryStore = new Map<string, VerificationRecord>(); // key: 이메일 주소
 
-    genenrateCode() {
+    genenrateCode(): string {
         return Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0');
     }
 
     // 인증코드 저장
-    async setCode(email: string): Promise<void> {
+    async setCode(email: string, code: string): Promise<Map<string, VerificationRecord>> {
         const now = Date.now();
-        const code = this.genenrateCode();
 
-        this.memoryStore.set(email, {
+        return this.memoryStore.set(email, {
             code,
             expiresAtMs: now + VERIFICATION_CODE_TTL_SEC * 1000,
             cooldownExpiresAtMs: now + VERIFICATION_COOLDOWN_SEC * 1000,

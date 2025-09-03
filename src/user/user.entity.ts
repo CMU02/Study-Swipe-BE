@@ -23,7 +23,7 @@ export class User {
   user_id: string;
 
   // 사용자 이메일
-  @Column()
+  @Column({ nullable: true })
   email: string;
 
   // 사용자 비밀번호
@@ -49,14 +49,5 @@ export class User {
   // 대학 정보
   @ManyToOne(() => Universities, (university) => university)
   @JoinColumn()
-  universities: Universities 
-  
-  /**
-   * 비밀번호 해싱 메서드 추가
-   */
-  @BeforeInsert()
-  @BeforeUpdate()
-  async hashPassword() {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
+  universities: Universities;
 }

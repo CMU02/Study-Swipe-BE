@@ -18,6 +18,10 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // 사용자 아이디
+  @Column()
+  user_id: string;
+
   // 사용자 이메일
   @Column()
   email: string;

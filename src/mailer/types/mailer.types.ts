@@ -13,8 +13,3 @@ export type VerificationRecord = {
     expiresAtMs: number; // 코드 만료 시각
     cooldownExpiresAtMs: number; // 재발송 쿨다운 만료 시각
 }
-
-export type VerifyCode = {
-    status_code: HttpStatus,
-    message: string
-}

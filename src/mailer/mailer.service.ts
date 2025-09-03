@@ -1,10 +1,9 @@
+import { SendEmailCommand, SESv2 } from '@aws-sdk/client-sesv2';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
-import { SendEmailCommand, SESv2 } from '@aws-sdk/client-sesv2';
+import { BaseResponse } from 'src/base_response';
 import { VerificationStore } from './verification.store';
-import { VerifyCode } from './types/mailer.types';
 
 @Injectable()
 export class MailerService {
@@ -37,7 +36,7 @@ export class MailerService {
 
       this.logger.log('Using AWS SES for email transport');
     }
-    
+
     // transporter가 정의되었을 때만 연결 확인
     if (this.transporter) {
       this.transporter.verify((error, success) => {
@@ -84,7 +83,7 @@ export class MailerService {
     });
   }
 
-  async verifyCode(code: string): Promise<VerifyCode> {
+  async verifyCode(code: string): Promise<BaseResponse> {
     const resultCode = await this.verificationStore.getCode(code);
     if (!resultCode) {
       throw new HttpException('인증코드가 올바르지 않습니다.', HttpStatus.UNAUTHORIZED);

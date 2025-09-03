@@ -1,14 +1,14 @@
-import { Profiles } from "src/profiles/profiles.entity";
-import { Column, Entity, ManyToMany, PrimaryColumn } from "typeorm";
+import { Profiles } from 'src/profiles/profiles.entity';
+import { Column, Entity, ManyToMany, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class CollabStyle {
-    @PrimaryColumn({ name: 'collab_style_id'})
-    id: string;
+  @PrimaryColumn({ name: 'collab_style_id' })
+  id: string;
 
-    @Column()
-    name: string
+  @Column()
+  name: string;
 
-    @ManyToMany(() => Profiles, (profile) => profile.major)
-    profiles: Profiles[]
+  @ManyToMany(() => Profiles, (profile) => profile.collab_style)
+  profiles: Profiles[];
 }

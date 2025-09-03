@@ -15,6 +15,8 @@ import { RegionsModule } from './regions/regions.module';
 import { MeetingTypesModule } from './meeting_types/meeting_types.module';
 import { MajorModule } from './major/major.module';
 import { CollabStyleModule } from './collab_style/collab_style.module';
+import { DaysOfWeekModule } from './days_of_week/days_of_week.module';
+import { ProfileAvailabilityWeeklyModule } from './profile_availability_weekly/profile_availability_weekly.module';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { CollabStyleModule } from './collab_style/collab_style.module';
     UserModule,
     ProfilesModule,
     AuthModule,
+    DaysOfWeekModule,
+    ProfileAvailabilityWeeklyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

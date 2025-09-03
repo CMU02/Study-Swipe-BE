@@ -1,7 +1,8 @@
 import { CollabStyle } from 'src/collab_style/collab_style.entity';
 import { Major } from 'src/major/major.entity';
-import { MeetingTypes } from 'src/meeting_types/meeting_types';
+import { MeetingTypes } from 'src/meeting_types/meeting_types.entity';
 import { ParticipationTerms } from 'src/participation_terms/participation_terms.entity';
+import { ProfileAvailabilityWeekly } from 'src/profile_availability_weekly/profile_availability_weekly.entity';
 import { Regions } from 'src/regions/regions.entity';
 import { SmokingStatus } from 'src/smoking_status/smoking_status.entity';
 import { SocialPrefs } from 'src/social_prefs/social_prefs.entity';
@@ -13,8 +14,8 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -81,7 +82,7 @@ export class Profiles {
    * 사교모임 가능 여부 N:1
    * @example 네, 아니오, 가끔
    */
-  @ManyToOne(() => SocialPrefs, (social_pref) => social_pref)
+  @ManyToOne(() => SocialPrefs, (social_pref) => social_pref.profiles)
   @JoinColumn()
   social_pref: SocialPrefs;
 
@@ -90,7 +91,12 @@ export class Profiles {
     () => ParticipationTerms,
     (participationTemrs) => participationTemrs.profiles,
   )
+  @JoinColumn()
   participation_terms: ParticipationTerms;
+
+  // 가능 요일 및 시간(외래키)
+  @OneToMany(() => ProfileAvailabilityWeekly, (paw) => paw.profiles)
+  profile_availability_weekly: ProfileAvailabilityWeekly;
 
   /**
    * 프로필에 표시될 지역
@@ -98,10 +104,10 @@ export class Profiles {
   @ManyToMany(() => Regions, { cascade: true, eager: false })
   @JoinTable({
     name: 'profiles_regions', // 생성될 중간 테이블 이름
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'profiles_id' },
+    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'regions_id',
-      referencedColumnName: 'regions_id',
+      referencedColumnName: 'id',
     },
   })
   regions: Regions[];
@@ -113,10 +119,10 @@ export class Profiles {
   @ManyToMany(() => MeetingTypes, { cascade: true, eager: false })
   @JoinTable({
     name: 'profiles_meeting_types',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'profiles_id' },
+    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'meeting_types_id',
-      referencedColumnName: 'meeting_types_id',
+      referencedColumnName: 'id',
     },
   })
   meeting_types: MeetingTypes[];
@@ -127,22 +133,25 @@ export class Profiles {
   @ManyToMany(() => Major, { cascade: true, eager: false })
   @JoinTable({
     name: 'profiles_major',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'profiles_id' },
-    inverseJoinColumn: {name: 'major_id', referencedColumnName: 'major_id'}
+    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'major_id', referencedColumnName: 'id' },
   })
   major: Major[];
 
   /**
-   * 협업 성향(단일 선택) 
-   * - 가르쳐주고 싶음(멘토) 
+   * 협업 성향(단일 선택)
+   * - 가르쳐주고 싶음(멘토)
    * - 같이 성장(피어)
    * - 배우고 싶음(러너)
    */
   @ManyToMany(() => CollabStyle, (collab) => collab.profiles)
   @JoinTable({
     name: 'profiles_collab_style',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'profiles_id' },
-    inverseJoinColumn: {name: 'collab_style_id', referencedColumnName: 'collab_style_id'}
+    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'collab_style_id',
+      referencedColumnName: 'id',
+    },
   })
-  collab_style: CollabStyle
+  collab_style: CollabStyle;
 }

@@ -82,16 +82,4 @@ export class MailerService {
       `,
     });
   }
-
-  async verifyCode(code: string): Promise<BaseResponse> {
-    const resultCode = await this.verificationStore.getCode(code);
-    if (!resultCode) {
-      throw new HttpException('인증코드가 올바르지 않습니다.', HttpStatus.UNAUTHORIZED);
-    }
-
-    return {
-      status_code: HttpStatus.OK,
-      message: '인증 성공했습니다.'
-    }
-  }
 }

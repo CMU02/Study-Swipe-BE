@@ -1,22 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { MailerModule } from './mailer/mailer.module';
-import { UserModule } from './user/user.module';
-import { ProfilesModule } from './profiles/profiles.module';
 import { AuthModule } from './auth/auth.module';
-import { UniversitiesModule } from './universities/universities.module';
-import { SmokingStatusModule } from './smoking_status/smoking_status.module';
-import { SocialPrefsModule } from './social_prefs/social_prefs.module';
-import { ParticipationTermsModule } from './participation_terms/participation_terms.module';
-import { RegionsModule } from './regions/regions.module';
-import { MeetingTypesModule } from './meeting_types/meeting_types.module';
-import { MajorModule } from './major/major.module';
 import { CollabStyleModule } from './collab_style/collab_style.module';
 import { DaysOfWeekModule } from './days_of_week/days_of_week.module';
+import { MailerModule } from './mailer/mailer.module';
+import { MajorModule } from './major/major.module';
+import { MeetingTypesModule } from './meeting_types/meeting_types.module';
+import { ParticipationTermsModule } from './participation_terms/participation_terms.module';
 import { ProfileAvailabilityWeeklyModule } from './profile_availability_weekly/profile_availability_weekly.module';
+import { ProfilesModule } from './profiles/profiles.module';
+import { RegionsModule } from './regions/regions.module';
+import { SmokingStatusModule } from './smoking_status/smoking_status.module';
+import { SocialPrefsModule } from './social_prefs/social_prefs.module';
+import { UniversitiesModule } from './universities/universities.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [

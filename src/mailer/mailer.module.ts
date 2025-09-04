@@ -7,6 +7,6 @@ import { VerificationStore } from './verification.store';
 @Module({
   controllers: [MailerController],
   providers: [MailerService, VerificationStore],
-  exports: [MailerService],
+  exports: [MailerService, VerificationStore],
 })
 export class MailerModule {}

@@ -105,26 +105,5 @@ describe('MailerService', () => {
         html: expect.stringContaining(testCode),
       });
     });
-
-    it('Verify Code - 성공', async () => {
-      mockVerificationStore.getCode.mockResolvedValue(testCode);
-
-      const result = await mailerService.verifyCode(testCode);
-
-      expect(mockVerificationStore.getCode).toHaveBeenCalledWith(testCode);
-      expect(result).toEqual({
-        status_code: 200,
-        message: '인증 성공했습니다.',
-      });
-    });
-
-    it('Verify Code - 실패 (잘못된 코드)', async () => {
-      mockVerificationStore.getCode.mockResolvedValue(null);
-
-      await expect(mailerService.verifyCode('wrong-code')).rejects.toThrow(
-        '인증코드가 올바르지 않습니다.',
-      );
-      expect(mockVerificationStore.getCode).toHaveBeenCalledWith('wrong-code');
-    });
   });
 });

@@ -1,16 +1,22 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
+import { BaseResponse } from 'src/base_response';
+import { MailerService } from 'src/mailer/mailer.service';
+import { VerificationStore } from 'src/mailer/verification.store';
 import { User } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
-import { RegisterCredentialsDto } from './dto/registerCredentials.dto';
-import { BaseResponse } from 'src/base_response';
-import * as bcrypt from 'bcrypt';
-import { RequestVerificationCodeDto } from './dto/requestVerificationCode.dto';
-import { MailerService } from 'src/mailer/mailer.service';
 import { ConfirmVerificationCode } from './dto/confirmVerificationCode.dto';
-import { VerificationStore } from 'src/mailer/verification.store';
-import { emit } from 'process';
-import { JwtService } from '@nestjs/jwt';
+import { RegisterCredentialsDto } from './dto/registerCredentials.dto';
+import { RequestVerificationCodeDto } from './dto/requestVerificationCode.dto';
+import { SignInDto } from './dto/signIn.dto';
 
 @Injectable()
 export class AuthService {
@@ -78,12 +84,12 @@ export class AuthService {
     }
 
     // 4. 교육기관 이메일 형식 검증
-    if (!this.isEducationEmail(user_email)) {
-      throw new HttpException(
-        '교육기관 이메일이 아닙니다. (.ac.kr, .edu, .academy)',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    // if (!this.isEducationEmail(user_email)) {
+    //   throw new HttpException(
+    //     '교육기관 이메일이 아닙니다. (.ac.kr, .edu, .academy)',
+    //     HttpStatus.BAD_REQUEST,
+    //   );
+    // }
 
     // 5. 유저 존재 여부 및 인증 상태 검증 (별도 메서드로 책임 분리)
     await this.vaildateUserForVerification(user_id);
@@ -141,6 +147,32 @@ export class AuthService {
           accessToken,
           refreshToken,
         },
+      },
+    };
+  }
+
+  async signin(signInDto: SignInDto): Promise<BaseResponse> {
+    const { user_id, user_pwd } = signInDto;
+
+    const findUser = await this.userRepository.findOne({ where: { user_id } });
+    if (!findUser) {
+      throw new UnauthorizedException('아이디가 틀립니다.');
+    }
+
+    const isMatch = await bcrypt.compare(user_pwd, findUser.password);
+    if (!isMatch) {
+      throw new UnauthorizedException(
+        '비밀번호가 틀립니다. 다시시도 해주세요.',
+      );
+    }
+
+    const { accessToken, refreshToken } = await this.generateToken(findUser);
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '로그인 성공했습니다.',
+      option: {
+        data: { accessToken, refreshToken },
       },
     };
   }

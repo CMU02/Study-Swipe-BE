@@ -4,6 +4,8 @@ import { RegisterCredentialsDto } from './dto/registerCredentials.dto';
 import { BaseResponse } from 'src/base_response';
 import { RequestVerificationCodeDto } from './dto/requestVerificationCode.dto';
 import { ConfirmVerificationCode } from './dto/confirmVerificationCode.dto';
+import { SignInDto } from './dto/signIn.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -28,5 +30,11 @@ export class AuthController {
     @Body() confirmVerifycode: ConfirmVerificationCode,
   ): Promise<BaseResponse> {
     return this.authService.cofirmVerificationCode(confirmVerifycode);
+  }
+
+  @Post('/signin')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  signIn(@Body() signin: SignInDto): Promise<BaseResponse> {
+    return this.authService.signin(signin);
   }
 }

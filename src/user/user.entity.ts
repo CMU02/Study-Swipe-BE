@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Universities } from 'src/universities/universities.entity';
+import { TermsOfUse } from 'src/terms_of_use/terms_of_use';
 
 @Entity({ name: 'users' })
 export class User {
@@ -30,6 +31,10 @@ export class User {
   @Column()
   password: string;
 
+  // 가중치 점수
+  @Column({ type: 'float', nullable: true })
+  weight_score: number;
+
   // 이메일 인증/미인증 여부 기본(미인증)
   @Column({ default: false })
   email_verified: boolean;
@@ -45,6 +50,9 @@ export class User {
   // 프로필
   @OneToOne(() => Profiles, (profiles) => profiles.user)
   profiles: Profiles;
+
+  @OneToOne(() => TermsOfUse, (termOfUse) => termOfUse.user)
+  terms_of_use: TermsOfUse;
 
   // 대학 정보
   @ManyToOne(() => Universities, (university) => university)

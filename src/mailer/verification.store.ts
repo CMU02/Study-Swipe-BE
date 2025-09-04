@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { VerificationRecord } from "./types/mailer.types";
+import { randomInt } from 'crypto';
 
 /**
  * 인증코드 유효 시간(초) 
@@ -18,7 +19,8 @@ export class VerificationStore {
     private memoryStore = new Map<string, VerificationRecord>(); // key: 이메일 주소
 
     genenrateCode(): string {
-        return Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0');
+        const code = randomInt(0, 1_000_000)
+        return code.toString().padStart(6, '0');
     }
 
     // 인증코드 저장
@@ -36,7 +38,7 @@ export class VerificationStore {
      * 인증 코드 조회
      * - 만료된 경우 null 반환
      */
-    async getCode(email: string): Promise<string | null> {
+    async getCode(email: string): Promise<VerificationRecord | null> {
         const verificationRecord = this.memoryStore.get(email);
         if (!verificationRecord) return null;
 
@@ -46,7 +48,7 @@ export class VerificationStore {
             return null;
         }
 
-        return verificationRecord.code;
+        return verificationRecord;
     }
 
     /**

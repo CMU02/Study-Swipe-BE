@@ -17,6 +17,9 @@ import { SmokingStatusModule } from './smoking_status/smoking_status.module';
 import { SocialPrefsModule } from './social_prefs/social_prefs.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 
 @Module({
   imports: [
@@ -34,6 +37,14 @@ import { UserModule } from './user/user.module';
       autoLoadEntities: true,
       synchronize: false,
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000, // 60초
+          limit: 10, // 1분 동안 10번까지 요청 가능
+        },
+      ],
+    }),
     MailerModule,
     UniversitiesModule,
     SmokingStatusModule,
@@ -48,8 +59,15 @@ import { UserModule } from './user/user.module';
     AuthModule,
     DaysOfWeekModule,
     ProfileAvailabilityWeeklyModule,
+    TermsOfUseModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

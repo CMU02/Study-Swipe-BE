@@ -61,15 +61,15 @@ export class MailerService {
   }
 
   async sendVerificationCode(to: string): Promise<void> {
-    const code = this.verificationStore.genenrateCode() // 코드 생성
-    
+    const code = this.verificationStore.genenrateCode(); // 코드 생성
+
     this.verificationStore.setCode(to, code); // 저장소에 해당 이메일과 인증코드 저장
 
     // 이메일 전송
     await this.transporter.sendMail({
-      from: this.from,
+      from: 'Study Swipe' + this.from,
       to,
-      subject: '[인증 코드] 요청하신 인증코드를 보내드립니다.',
+      subject: '[Study Swipe] 요청하신 인증코드를 보내드립니다.',
       html: `
         <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
           <h1 style="color: #333;">이메일 인증 안내</h1>

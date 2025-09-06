@@ -1,7 +1,7 @@
 import { Profiles } from 'src/profiles/profiles.entity';
+import { TermsOfUse } from 'src/terms_of_use/terms_of_use';
+import { Universities } from 'src/universities/universities.entity';
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,9 +10,6 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import * as bcrypt from 'bcrypt';
-import { Universities } from 'src/universities/universities.entity';
-import { TermsOfUse } from 'src/terms_of_use/terms_of_use';
 
 @Entity({ name: 'users' })
 export class User {

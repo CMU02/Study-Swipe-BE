@@ -25,47 +25,47 @@ export class Profiles {
   id: number;
 
   // 서비스에 표시될 사용자의 이름 (닉네임)
-  @Column({ nullable: false })
-  nickname: string;
+  @Column({ nullable: true })
+  display_name: string;
 
   // 프로필 사진의 URL 주소
-  @Column()
+  @Column({ nullable: true })
   image: string;
 
   // 생년월일
-  @Column()
+  @Column({ nullable: true })
   birth_data: Date;
 
   // 사용자의 나이
-  @Column()
-  age: string;
+  @Column({ nullable: true })
+  age: number;
 
   // 성별
-  @Column()
+  @Column({ nullable: true })
   gender: string;
 
   // 사용자의 자기소개
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   bio_note: string;
 
   // 사용자의 목표 및 다짐 등
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   goals_note: string;
 
   // 활동 반경
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   activity_radius_km: number;
 
   // 선호일수
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', nullable: true })
   preferred_days_per_week: number;
 
   // 팀리더 여부
-  @Column()
+  @Column({ nullable: true })
   team_lead_ok: boolean;
 
   // 연락방법
-  @Column()
+  @Column({ nullable: true })
   contact_info: string;
 
   // 사용자 외래키 1:1

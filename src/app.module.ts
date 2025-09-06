@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,11 +17,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { RegionsModule } from './regions/regions.module';
 import { SmokingStatusModule } from './smoking_status/smoking_status.module';
 import { SocialPrefsModule } from './social_prefs/social_prefs.module';
+import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
-import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 
 @Module({
   imports: [

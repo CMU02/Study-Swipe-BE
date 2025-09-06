@@ -1,8 +1,11 @@
 import {
+  BadRequestException,
+  ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -37,7 +40,7 @@ export class AuthService {
       where: { user_id },
     });
     if (existingUserId) {
-      throw new HttpException('이미 가입된 아이디입니다.', HttpStatus.CONFLICT);
+      throw new ConflictException('이미 가입된 아이디입니다.');
     }
 
     // 비밀번호 해싱
@@ -110,16 +113,12 @@ export class AuthService {
     const verifyResult = await this.verificationStore.getCode(user_email);
 
     if (!verifyResult) {
-      throw new HttpException(
+      throw new NotFoundException(
         '인증 정보가 만료되었습니다. 코드를 다시 요청해주세요.',
-        HttpStatus.NOT_FOUND, // 404
       );
     }
     if (verifyResult.code !== verify_code) {
-      throw new HttpException(
-        '인증코드가 올바르지 않습니다.',
-        HttpStatus.UNAUTHORIZED, // 401
-      );
+      throw new UnauthorizedException('인증코드가 올바르지 않습니다.');
     }
 
     const user = await this.userRepository.findOne({ where: { user_id } });
@@ -147,6 +146,9 @@ export class AuthService {
           accessToken,
           refreshToken,
         },
+        meta_data: {
+          id: user.id,
+        },
       },
     };
   }
@@ -154,25 +156,28 @@ export class AuthService {
   async signin(signInDto: SignInDto): Promise<BaseResponse> {
     const { user_id, user_pwd } = signInDto;
 
-    const findUser = await this.userRepository.findOne({ where: { user_id } });
-    if (!findUser) {
+    const user = await this.userRepository.findOne({ where: { user_id } });
+    if (!user) {
       throw new UnauthorizedException('아이디가 틀립니다.');
     }
 
-    const isMatch = await bcrypt.compare(user_pwd, findUser.password);
+    const isMatch = await bcrypt.compare(user_pwd, user.password);
     if (!isMatch) {
       throw new UnauthorizedException(
         '비밀번호가 틀립니다. 다시시도 해주세요.',
       );
     }
 
-    const { accessToken, refreshToken } = await this.generateToken(findUser);
+    const { accessToken, refreshToken } = await this.generateToken(user);
 
     return {
       status_code: HttpStatus.OK,
       message: '로그인 성공했습니다.',
       option: {
         data: { accessToken, refreshToken },
+        meta_data: {
+          id: user.id,
+        },
       },
     };
   }
@@ -232,16 +237,10 @@ export class AuthService {
     });
 
     if (!findUser) {
-      throw new HttpException(
-        '해당 아이디를 가진 사용자는 없습니다.',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('해당 아이디를 가진 사용자는 없습니다');
     }
     if (findUser.email_verified) {
-      throw new HttpException(
-        '이미 인증이 완료된 이메일입니다.',
-        HttpStatus.CONFLICT,
-      );
+      throw new ConflictException('이미 인증이 완료된 이메일입니다.');
     }
   }
 }

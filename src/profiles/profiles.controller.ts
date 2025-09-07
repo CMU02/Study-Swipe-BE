@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/authGuard';
 import { BaseResponse } from 'src/base_response';
-import { UpdateProfileBasicDto } from './dto/update_profile_basic.dto';
+import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfilesService } from './profiles.service';
 
 @UseGuards(AuthGuard)
@@ -25,18 +25,26 @@ export class ProfilesController {
   @Post('/create-profile')
   createMyProfile(
     @Request() req,
-    @Body() dto: UpdateProfileBasicDto,
+    @Body() dto: ProfileBasicDto,
   ): Promise<BaseResponse> {
-    const user_id = req.user.id;
-    return this.profilesService.upsertBasicProfile(user_id, dto);
+    const user_uuid = req.user.uuid;
+    return this.profilesService.upsertBasicProfile({
+      uuid: user_uuid,
+      dto,
+      target: 'create',
+    });
   }
 
   @Patch('/update-profile')
   updateMyProfile(
     @Request() req,
-    @Body() dto: UpdateProfileBasicDto,
+    @Body() dto: ProfileBasicDto,
   ): Promise<BaseResponse> {
-    const user_id = req.user.id;
-    return this.profilesService.upsertBasicProfile(user_id, dto);
+    const user_uuid = req.user.uuid;
+    return this.profilesService.upsertBasicProfile({
+      uuid: user_uuid,
+      dto,
+      target: 'update',
+    });
   }
 }

@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/user/user.service';
 import { Repository } from 'typeorm';
 import { Profiles } from './profiles.entity';
-import { UpdateProfileBasicDto } from './dto/update_profile_basic.dto';
-import { BaseResponse } from 'src/base_response';
+import { ProfileBasicDto } from './dto/profile_basic.dto';
+import { BaseResponse, UpsertProps } from 'src/base_response';
 
 @Injectable()
 export class ProfilesService {
@@ -14,13 +14,14 @@ export class ProfilesService {
     private userService: UserService,
   ) {}
 
-  async upsertBasicProfile(
-    id: string,
-    dto: UpdateProfileBasicDto,
-  ): Promise<BaseResponse> {
-    const user = await this.userService.findUserUuid(id);
+  async upsertBasicProfile({
+    ...props
+  }: UpsertProps<ProfileBasicDto>): Promise<BaseResponse> {
+    const { uuid, dto, target } = props;
+
+    const user = await this.userService.findUserUuid(uuid);
     let profile = await this.profilesRepository.findOne({
-      where: { user: { id } },
+      where: { user: { uuid } },
     });
 
     if (!profile) {
@@ -36,7 +37,10 @@ export class ProfilesService {
 
     return {
       status_code: HttpStatus.CREATED,
-      message: '프로필 업데이트 성공',
+      message:
+        target === 'update'
+          ? '기본 프로필 업데이트 성공'
+          : '기본 프로필 생성 완료',
     };
   }
 }

@@ -20,6 +20,7 @@ import { SocialPrefsModule } from './social_prefs/social_prefs.module';
 import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
+import { PreferredMemberCountModule } from './preferred_member_count/preferred_member_count.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { UserModule } from './user/user.module';
     DaysOfWeekModule,
     ProfileAvailabilityWeeklyModule,
     TermsOfUseModule,
+    PreferredMemberCountModule,
   ],
   controllers: [AppController],
   providers: [

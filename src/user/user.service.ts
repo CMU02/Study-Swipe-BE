@@ -12,7 +12,7 @@ export class UserService {
 
   async findUserUuid(uuid: string, relation?: string): Promise<User> {
     const findUser = await this.usersRepository.findOne({
-      where: { id: uuid },
+      where: { uuid },
       relations: relation ? [relation] : [],
     });
     if (!findUser) {

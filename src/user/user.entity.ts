@@ -14,7 +14,7 @@ import {
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  uuid: string;
 
   // 사용자 아이디
   @Column()

@@ -146,9 +146,6 @@ export class AuthService {
           accessToken,
           refreshToken,
         },
-        meta_data: {
-          id: user.id,
-        },
       },
     };
   }
@@ -175,9 +172,6 @@ export class AuthService {
       message: '로그인 성공했습니다.',
       option: {
         data: { accessToken, refreshToken },
-        meta_data: {
-          id: user.id,
-        },
       },
     };
   }
@@ -186,7 +180,7 @@ export class AuthService {
     user: User,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = {
-      id: user.id,
+      uuid: user.uuid,
       userId: user.user_id,
     };
 

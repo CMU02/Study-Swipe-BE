@@ -2,6 +2,7 @@ import { CollabStyle } from 'src/collab_style/collab_style.entity';
 import { Major } from 'src/major/major.entity';
 import { MeetingTypes } from 'src/meeting_types/meeting_types.entity';
 import { ParticipationTerms } from 'src/participation_terms/participation_terms.entity';
+import { PreferredMemberCount } from 'src/preferred_member_count/preferred_member_count.entity';
 import { ProfileAvailabilityWeekly } from 'src/profile_availability_weekly/profile_availability_weekly.entity';
 import { Regions } from 'src/regions/regions.entity';
 import { SmokingStatus } from 'src/smoking_status/smoking_status.entity';
@@ -56,13 +57,9 @@ export class Profiles {
   @Column({ type: 'integer', nullable: true })
   activity_radius_km: number;
 
-  // 선호일수
-  @Column({ type: 'integer', nullable: true })
-  preferred_days_per_week: number;
-
   // 선호 인원 수
-  @Column({ nullable: true })
-  preferred_member_count: string;
+  @OneToOne(() => PreferredMemberCount, (pmc) => pmc.profiles)
+  preferred_member_count: PreferredMemberCount;
 
   // 연락방법
   @Column({ nullable: true })

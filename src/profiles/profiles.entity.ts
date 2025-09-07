@@ -60,9 +60,9 @@ export class Profiles {
   @Column({ type: 'integer', nullable: true })
   preferred_days_per_week: number;
 
-  // 팀리더 여부
+  // 선호 인원 수
   @Column({ nullable: true })
-  team_lead_ok: boolean;
+  preferred_member_count: string;
 
   // 연락방법
   @Column({ nullable: true })

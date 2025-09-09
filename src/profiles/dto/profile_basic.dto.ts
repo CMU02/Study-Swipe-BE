@@ -55,8 +55,8 @@ export class ProfileBasicDto {
    */
   @IsOptional()
   @IsString({ message: '성별은 문자열이어야 합니다.' })
-  @IsIn(['남성', '여성', '기타'], {
-    message: '성별은 남성, 여성, 기타 중 하나여야 합니다.',
+  @IsIn(['남성', '여성'], {
+    message: '성별은 남성, 여성 중 하나여야 합니다.',
   })
   readonly gender?: string;
 

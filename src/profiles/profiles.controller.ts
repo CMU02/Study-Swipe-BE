@@ -11,6 +11,7 @@ import { AuthGuard } from 'src/auth/authGuard';
 import { BaseResponse } from 'src/base_response';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfilesService } from './profiles.service';
+import { ProfileSmokingStatusDto } from './dto/profile_smoking_status.dto';
 
 /**
  * 사용자 프로필 관련 HTTP 엔드포인트를 처리하는 컨트롤러
@@ -79,12 +80,12 @@ export class ProfilesController {
   @Patch('/smoking-status')
   async updateSmokingStatus(
     @Request() req,
-    @Body() { smoking_status_name }: { smoking_status_name: string },
+    @Body() dto: ProfileSmokingStatusDto,
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
     return this.profilesService.updateSmokingStatus(
       userUuid,
-      smoking_status_name,
+      dto.smoking_status_name,
     );
   }
 }

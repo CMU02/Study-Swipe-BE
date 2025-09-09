@@ -1,8 +1,8 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TermsOfUse } from './terms_of_use';
+import { TermsOfUse } from './terms_of_use.entity';
 import { Repository } from 'typeorm';
-import { CreateTermsOfUseDto } from './dto/createTemrsOfUse.dto';
+import { CreateTermsOfUseDto } from './dto/create_Temrs_of_use.dto';
 import { BaseResponse } from 'src/base_response';
 import { User } from 'src/user/user.entity';
 

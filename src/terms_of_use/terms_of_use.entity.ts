@@ -14,7 +14,7 @@ export class TermsOfUse {
   id: string;
 
   @OneToOne(() => User, (user) => user.terms_of_use)
-  @JoinColumn()
+  @JoinColumn({ name: 'user_uuid' })
   user: User;
 
   @Column({ default: false })

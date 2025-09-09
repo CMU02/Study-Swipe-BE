@@ -1,5 +1,5 @@
 import { Profiles } from 'src/profiles/profiles.entity';
-import { TermsOfUse } from 'src/terms_of_use/terms_of_use';
+import { TermsOfUse } from 'src/terms_of_use/terms_of_use.entity';
 import { Universities } from 'src/universities/universities.entity';
 import {
   Column,
@@ -13,7 +13,7 @@ import {
 
 @Entity({ name: 'users' })
 export class User {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn('uuid', { name: 'user_uuid' })
   uuid: string;
 
   // 사용자 아이디

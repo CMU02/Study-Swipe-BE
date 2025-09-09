@@ -46,12 +46,12 @@ export class ProfileBasicDto {
    */
   @IsOptional()
   @IsInt({ message: '나이는 정수여야 합니다.' })
-  @Min(14, { message: '나이는 최소 14세 이상이어야 합니다.' })
+  @Min(18, { message: '나이는 최소 만18세 이상이어야 합니다.' })
   @Max(100, { message: '나이는 최대 100세까지 가능합니다.' })
   readonly age?: number;
 
   /**
-   * 성별 (남성, 여성, 기타)
+   * 성별 (남성, 여성)
    */
   @IsOptional()
   @IsString({ message: '성별은 문자열이어야 합니다.' })

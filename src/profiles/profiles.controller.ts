@@ -9,9 +9,14 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/authGuard';
 import { BaseResponse } from 'src/base_response';
+import { ProfileActivityRadiusDto } from './dto/profile_activity_radius.dto';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
+import { ProfileContactInfoDto } from './dto/profile_contact_info.dto';
+import { ProfileGoalsNoteDto } from './dto/profile_goals_note.dto';
 import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_count.dto';
+import { ProfileRegionsDto } from './dto/profile_regions.dto';
 import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
+import { ProfileStudyDto } from './dto/profile_study.dto';
 import { ProfilesService } from './profiles.service';
 
 /**
@@ -125,5 +130,83 @@ export class ProfilesController {
       dto.min_member_count,
       dto.max_member_count,
     );
+  }
+
+  /**
+   * 사용자의 학습 관련 프로필 정보를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 학습 관련 정보 (목표, 활동 반경, 연락처)
+   * @returns 학습 정보 업데이트 결과
+   */
+  @Patch('/study-info')
+  async updateStudyProfile(
+    @Request() req,
+    @Body() dto: ProfileStudyDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateStudyProfile(userUuid, dto);
+  }
+
+  /**
+   * 사용자의 학습 목표를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 학습 목표 정보
+   * @returns 학습 목표 업데이트 결과
+   */
+  @Patch('/goals-note')
+  async updateGoalsNote(
+    @Request() req,
+    @Body() dto: ProfileGoalsNoteDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateGoalsNote(userUuid, dto.goals_note);
+  }
+
+  /**
+   * 사용자의 활동 반경을 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 활동 반경 정보
+   * @returns 활동 반경 업데이트 결과
+   */
+  @Patch('/activity-radius')
+  async updateActivityRadius(
+    @Request() req,
+    @Body() dto: ProfileActivityRadiusDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateActivityRadius(
+      userUuid,
+      dto.activity_radius_km,
+    );
+  }
+
+  /**
+   * 사용자의 연락 방법을 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 연락 방법 정보
+   * @returns 연락 방법 업데이트 결과
+   */
+  @Patch('/contact-info')
+  async updateContactInfo(
+    @Request() req,
+    @Body() dto: ProfileContactInfoDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateContactInfo(userUuid, dto.contact_info);
+  }
+
+  /**
+   * 사용자의 지역 정보를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 지역 ID 목록
+   * @returns 지역 정보 업데이트 결과
+   */
+  @Patch('/regions')
+  async updateRegions(
+    @Request() req,
+    @Body() dto: ProfileRegionsDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateRegions(userUuid, dto.region_ids);
   }
 }

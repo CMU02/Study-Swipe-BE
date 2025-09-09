@@ -37,36 +37,4 @@ export class ProfileStudyDto {
   @IsString({ message: '연락 방법은 문자열이어야 합니다.' })
   @MaxLength(100, { message: '연락 방법은 최대 100자까지 가능합니다.' })
   readonly contact_info?: string;
-
-  /**
-   * 흡연 상태 ID
-   */
-  @IsOptional()
-  @IsInt({ message: '흡연 상태 ID는 정수여야 합니다.' })
-  @IsPositive({ message: '흡연 상태 ID는 양수여야 합니다.' })
-  readonly smoking_status_id?: number;
-
-  /**
-   * 사교 모임 선호도 ID
-   */
-  @IsOptional()
-  @IsInt({ message: '사교 모임 선호도 ID는 정수여야 합니다.' })
-  @IsPositive({ message: '사교 모임 선호도 ID는 양수여야 합니다.' })
-  readonly social_pref_id?: number;
-
-  /**
-   * 참여 기간 ID
-   */
-  @IsOptional()
-  @IsInt({ message: '참여 기간 ID는 정수여야 합니다.' })
-  @IsPositive({ message: '참여 기간 ID는 양수여야 합니다.' })
-  readonly participation_terms_id?: number;
-
-  /**
-   * 선호 인원 수 ID
-   */
-  @IsOptional()
-  @IsInt({ message: '선호 인원 수 ID는 정수여야 합니다.' })
-  @IsPositive({ message: '선호 인원 수 ID는 양수여야 합니다.' })
-  readonly preferred_member_count_id?: number;
 }

@@ -10,8 +10,9 @@ import {
 import { AuthGuard } from 'src/auth/authGuard';
 import { BaseResponse } from 'src/base_response';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
+import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_count.dto';
+import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
 import { ProfilesService } from './profiles.service';
-import { ProfileSmokingStatusDto } from './dto/profile_smoking_status.dto';
 
 /**
  * 사용자 프로필 관련 HTTP 엔드포인트를 처리하는 컨트롤러
@@ -80,12 +81,49 @@ export class ProfilesController {
   @Patch('/smoking-status')
   async updateSmokingStatus(
     @Request() req,
-    @Body() dto: ProfileSmokingStatusDto,
+    @Body() { smoking_status_name }: { smoking_status_name: string },
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
     return this.profilesService.updateSmokingStatus(
       userUuid,
-      dto.smoking_status_name,
+      smoking_status_name,
+    );
+  }
+
+  /**
+   * 사용자의 사교모임 선호도를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 사교모임 선호도 정보
+   * @returns 사교모임 선호도 업데이트 결과
+   */
+  @Patch('/social-pref')
+  async updateSocialPref(
+    @Request() req,
+    @Body() dto: ProfileSocialPrefDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateSocialPref(
+      userUuid,
+      dto.social_pref_name,
+    );
+  }
+
+  /**
+   * 사용자의 선호 인원 수를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 선호 인원 수 정보
+   * @returns 선호 인원 수 업데이트 결과
+   */
+  @Patch('/preferred-member-count')
+  async updatePreferredMemberCount(
+    @Request() req,
+    @Body() dto: ProfilePreferredMemberCountDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updatePreferredMemberCount(
+      userUuid,
+      dto.min_member_count,
+      dto.max_member_count,
     );
   }
 }

@@ -161,15 +161,12 @@ export class Profiles {
   meeting_types: MeetingTypes[];
 
   /**
-   * 전공
+   * 전공 (N:1 관계, 단일 선택)
+   * - 컴퓨터공학, 경영학, 디자인학 등
    */
-  @ManyToMany(() => Major, { cascade: true, eager: false })
-  @JoinTable({
-    name: 'profiles_major',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'major_id', referencedColumnName: 'id' },
-  })
-  major: Major[];
+  @ManyToOne(() => Major, (major) => major.profiles)
+  @JoinColumn({ name: 'major_id' })
+  major: Major;
 
   /**
    * 협업 성향 (N:1 관계, 단일 선택)

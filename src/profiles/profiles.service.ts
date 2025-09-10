@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseResponse, UpsertProps } from 'src/base_response';
 import { CollabStyleService } from 'src/collab_style/collab_style.service';
+import { MajorService } from 'src/major/major.service';
 import { MeetingTypesService } from 'src/meeting_types/meeting_types.service';
 import { PreferredMemberCountService } from 'src/preferred_member_count/preferred_member_count.service';
 import { RegionsService } from 'src/regions/regions.service';
@@ -31,6 +32,7 @@ export class ProfilesService {
     private readonly regionsService: RegionsService,
     private readonly meetingTypesService: MeetingTypesService,
     private readonly collabStyleService: CollabStyleService,
+    private readonly majorService: MajorService,
   ) {}
 
   /**
@@ -450,6 +452,42 @@ export class ProfilesService {
           collab_style: {
             id: collabStyle.id,
             name: collabStyle.name,
+          },
+        },
+      },
+    };
+  }
+
+  /**
+   * 사용자 프로필의 전공을 업데이트합니다.
+   * @param uuid 사용자 UUID
+   * @param majorName 전공명 (사용자 직접 입력)
+   * @returns 처리 결과를 담은 BaseResponse
+   * @throws NotFoundException 사용자가 존재하지 않을 경우
+   * @throws Error 전공명이 비어있을 경우
+   */
+  async updateMajor(uuid: string, majorName: string): Promise<BaseResponse> {
+    // 사용자 존재 여부 확인
+    await this.userService.findUserUuid(uuid);
+
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
+
+    // 전공명으로 전공 찾거나 새로 생성
+    const major = await this.majorService.findOrCreateMajorByName(majorName);
+
+    // 프로필에 전공 설정 및 저장
+    profile.major = major;
+    await this.profilesRepository.save(profile);
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '전공이 성공적으로 업데이트되었습니다.',
+      option: {
+        meta_data: {
+          major: {
+            id: major.id,
+            name: major.name,
           },
         },
       },

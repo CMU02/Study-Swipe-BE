@@ -14,6 +14,7 @@ import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfileCollabStyleDto } from './dto/profile_collab_style.dto';
 import { ProfileContactInfoDto } from './dto/profile_contact_info.dto';
 import { ProfileGoalsNoteDto } from './dto/profile_goals_note.dto';
+import { ProfileMajorDto } from './dto/profile_major.dto';
 import { ProfileMeetingTypesDto } from './dto/profile_meeting_types.dto';
 import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_count.dto';
 import { ProfileRegionsDto } from './dto/profile_regions.dto';
@@ -246,5 +247,20 @@ export class ProfilesController {
       userUuid,
       dto.collab_style_id,
     );
+  }
+
+  /**
+   * 사용자의 전공을 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 전공명 (사용자 직접 입력)
+   * @returns 전공 업데이트 결과
+   */
+  @Patch('/major')
+  async updateMajor(
+    @Request() req,
+    @Body() dto: ProfileMajorDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateMajor(userUuid, dto.major_name);
   }
 }

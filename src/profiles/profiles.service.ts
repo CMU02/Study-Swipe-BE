@@ -2,6 +2,8 @@ import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BaseResponse, UpsertProps } from 'src/base_response';
+import { CollabStyleService } from 'src/collab_style/collab_style.service';
+import { MeetingTypesService } from 'src/meeting_types/meeting_types.service';
 import { PreferredMemberCountService } from 'src/preferred_member_count/preferred_member_count.service';
 import { RegionsService } from 'src/regions/regions.service';
 import { SmokingStatusService } from 'src/smoking_status/smoking_status.service';
@@ -11,6 +13,7 @@ import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfileStudyDto } from './dto/profile_study.dto';
 import { Profiles } from './profiles.entity';
 import { Regions } from 'src/regions/regions.entity';
+import { MeetingTypes } from 'src/meeting_types/meeting_types.entity';
 
 /**
  * 사용자 프로필 관련 비즈니스 로직을 처리하는 서비스
@@ -26,6 +29,8 @@ export class ProfilesService {
     private readonly socialPrefsService: SocialPrefsService,
     private readonly preferredMemberCountService: PreferredMemberCountService,
     private readonly regionsService: RegionsService,
+    private readonly meetingTypesService: MeetingTypesService,
+    private readonly collabStyleService: CollabStyleService,
   ) {}
 
   /**
@@ -356,6 +361,96 @@ export class ProfilesService {
             city_first: region.city_first,
             city_second: region.city_second,
           })),
+        },
+      },
+    };
+  }
+
+  /**
+   * 사용자 프로필의 모임 유형을 업데이트합니다.
+   * @param uuid 사용자 UUID
+   * @param meetingTypeIds 모임 유형 ID 배열
+   * @returns 처리 결과를 담은 BaseResponse
+   * @throws NotFoundException 사용자나 모임 유형이 존재하지 않을 경우
+   */
+  async updateMeetingTypes(
+    uuid: string,
+    meetingTypeIds: number[],
+  ): Promise<BaseResponse> {
+    // 사용자 존재 여부 확인
+    await this.userService.findUserUuid(uuid);
+
+    // 기존 프로필 조회 또는 새로 생성 (모임 유형 관계 포함)
+    let profile = await this.profilesRepository.findOne({
+      where: { user: { uuid } },
+      relations: ['meeting_types'],
+    });
+
+    if (!profile) {
+      // 프로필이 없으면 새로 생성
+      const user = await this.userService.findUserUuid(uuid);
+      profile = this.profilesRepository.create({ user, meeting_types: [] });
+    }
+
+    // 모임 유형 정보 조회 (빈 배열이면 모든 모임 유형 제거)
+    let meetingTypes: MeetingTypes[] = [];
+    if (meetingTypeIds.length > 0) {
+      meetingTypes =
+        await this.meetingTypesService.findMeetingTypesByIds(meetingTypeIds);
+    }
+
+    // 프로필에 모임 유형 설정 및 저장
+    profile.meeting_types = meetingTypes;
+    await this.profilesRepository.save(profile);
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '모임 유형이 성공적으로 업데이트되었습니다.',
+      option: {
+        meta_data: {
+          meeting_types: meetingTypes.map((type) => ({
+            id: type.id,
+            name: type.name,
+          })),
+        },
+      },
+    };
+  }
+
+  /**
+   * 사용자 프로필의 협업 성향을 업데이트합니다.
+   * @param uuid 사용자 UUID
+   * @param collabStyleId 협업 성향 ID (단일 선택)
+   * @returns 처리 결과를 담은 BaseResponse
+   * @throws NotFoundException 사용자나 협업 성향이 존재하지 않을 경우
+   */
+  async updateCollabStyle(
+    uuid: string,
+    collabStyleId: number,
+  ): Promise<BaseResponse> {
+    // 사용자 존재 여부 확인
+    await this.userService.findUserUuid(uuid);
+
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
+
+    // 협업 성향 조회
+    const collabStyle =
+      await this.collabStyleService.findCollabStyleById(collabStyleId);
+
+    // 프로필에 협업 성향 설정 및 저장
+    profile.collab_style = collabStyle;
+    await this.profilesRepository.save(profile);
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '협업 성향이 성공적으로 업데이트되었습니다.',
+      option: {
+        meta_data: {
+          collab_style: {
+            id: collabStyle.id,
+            name: collabStyle.name,
+          },
         },
       },
     };

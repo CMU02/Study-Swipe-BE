@@ -172,21 +172,14 @@ export class Profiles {
   major: Major[];
 
   /**
-   * 협업 성향 (M:N 관계)
+   * 협업 성향 (N:1 관계, 단일 선택)
    * - 가르쳐주고 싶음(멘토)
    * - 같이 성장(피어)
    * - 배우고 싶음(러너)
    */
-  @ManyToMany(() => CollabStyle, (collab) => collab.profiles)
-  @JoinTable({
-    name: 'profiles_collab_style',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
-    inverseJoinColumn: {
-      name: 'collab_style_id',
-      referencedColumnName: 'id',
-    },
-  })
-  collab_style: CollabStyle[];
+  @ManyToOne(() => CollabStyle, (collab) => collab.profiles)
+  @JoinColumn({ name: 'collab_style_id' })
+  collab_style: CollabStyle;
 
   /**
    * 생성 일시

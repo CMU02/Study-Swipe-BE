@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CollabStyleModule } from 'src/collab_style/collab_style.module';
+import { MeetingTypesModule } from 'src/meeting_types/meeting_types.module';
 import { PreferredMemberCountModule } from 'src/preferred_member_count/preferred_member_count.module';
 import { RegionsModule } from 'src/regions/regions.module';
 import { SmokingStatusModule } from 'src/smoking_status/smoking_status.module';
@@ -22,6 +24,8 @@ import { ProfilesService } from './profiles.service';
     SocialPrefsModule, // 사교모임 선호도 관리 기능
     PreferredMemberCountModule, // 선호 인원 수 관리 기능
     RegionsModule, // 지역 관리 기능
+    MeetingTypesModule, // 모임 유형 관리 기능
+    CollabStyleModule, // 협업 성향 관리 기능
   ],
   providers: [
     ProfilesService, // 프로필 비즈니스 로직

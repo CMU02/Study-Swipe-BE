@@ -11,8 +11,10 @@ import { AuthGuard } from 'src/auth/authGuard';
 import { BaseResponse } from 'src/base_response';
 import { ProfileActivityRadiusDto } from './dto/profile_activity_radius.dto';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
+import { ProfileCollabStyleDto } from './dto/profile_collab_style.dto';
 import { ProfileContactInfoDto } from './dto/profile_contact_info.dto';
 import { ProfileGoalsNoteDto } from './dto/profile_goals_note.dto';
+import { ProfileMeetingTypesDto } from './dto/profile_meeting_types.dto';
 import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_count.dto';
 import { ProfileRegionsDto } from './dto/profile_regions.dto';
 import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
@@ -208,5 +210,41 @@ export class ProfilesController {
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
     return this.profilesService.updateRegions(userUuid, dto.region_ids);
+  }
+
+  /**
+   * 사용자의 모임 유형을 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 모임 유형 ID 목록
+   * @returns 모임 유형 업데이트 결과
+   */
+  @Patch('/meeting-types')
+  async updateMeetingTypes(
+    @Request() req,
+    @Body() dto: ProfileMeetingTypesDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateMeetingTypes(
+      userUuid,
+      dto.meeting_type_ids,
+    );
+  }
+
+  /**
+   * 사용자의 협업 성향을 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 협업 성향 ID (단일 선택)
+   * @returns 협업 성향 업데이트 결과
+   */
+  @Patch('/collab-style')
+  async updateCollabStyle(
+    @Request() req,
+    @Body() dto: ProfileCollabStyleDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateCollabStyle(
+      userUuid,
+      dto.collab_style_id,
+    );
   }
 }

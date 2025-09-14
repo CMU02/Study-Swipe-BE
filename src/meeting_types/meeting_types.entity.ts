@@ -1,5 +1,5 @@
 import { Profiles } from 'src/profiles/profiles.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * 모임 유형 정보를 저장하는 엔티티
@@ -18,8 +18,8 @@ export class MeetingTypes {
   name: string;
 
   /**
-   * 이 모임 유형을 선택한 프로필들 (M:N 관계)
+   * 이 모임 유형을 선택한 프로필들 (1:N 관계)
    */
-  @ManyToMany(() => Profiles, (profile) => profile.meeting_types)
+  @OneToMany(() => Profiles, (profile) => profile.meeting_type)
   profiles: Profiles[];
 }

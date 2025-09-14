@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  ManyToMany,
+  OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -44,8 +44,8 @@ export class Regions {
   lng: number;
 
   /**
-   * 이 지역을 선택한 프로필들 (M:N 관계)
+   * 이 지역을 선택한 프로필들 (1:N 관계)
    */
-  @ManyToMany(() => Profiles, (profile) => profile.regions)
+  @OneToMany(() => Profiles, (profile) => profile.region)
   profiles: Profiles[];
 }

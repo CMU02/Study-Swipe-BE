@@ -201,33 +201,33 @@ export class ProfilesController {
   /**
    * 사용자의 지역 정보를 업데이트합니다.
    * @param req 인증된 사용자 요청 객체
-   * @param dto 지역 ID 목록
+   * @param dto 지역 ID (단일 선택)
    * @returns 지역 정보 업데이트 결과
    */
-  @Patch('/regions')
-  async updateRegions(
+  @Patch('/region')
+  async updateRegion(
     @Request() req,
     @Body() dto: ProfileRegionsDto,
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
-    return this.profilesService.updateRegions(userUuid, dto.region_ids);
+    return this.profilesService.updateRegion(userUuid, dto.region_id);
   }
 
   /**
    * 사용자의 모임 유형을 업데이트합니다.
    * @param req 인증된 사용자 요청 객체
-   * @param dto 모임 유형 ID 목록
+   * @param dto 모임 유형 ID (단일 선택)
    * @returns 모임 유형 업데이트 결과
    */
-  @Patch('/meeting-types')
-  async updateMeetingTypes(
+  @Patch('/meeting-type')
+  async updateMeetingType(
     @Request() req,
     @Body() dto: ProfileMeetingTypesDto,
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
-    return this.profilesService.updateMeetingTypes(
+    return this.profilesService.updateMeetingType(
       userUuid,
-      dto.meeting_type_ids,
+      dto.meeting_type_id,
     );
   }
 

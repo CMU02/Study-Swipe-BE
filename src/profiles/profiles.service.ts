@@ -53,8 +53,8 @@ export class ProfilesService {
         'social_pref',
         'participation_terms',
         'preferred_member_count',
-        'regions',
-        'meeting_types',
+        'region',
+        'meeting_type',
         'major',
         'collab_style',
       ],
@@ -320,37 +320,21 @@ export class ProfilesService {
   /**
    * 사용자 프로필의 지역 정보를 업데이트합니다.
    * @param uuid 사용자 UUID
-   * @param regionIds 지역 ID 배열
+   * @param regionId 지역 ID (단일 선택)
    * @returns 처리 결과를 담은 BaseResponse
    * @throws NotFoundException 사용자나 지역이 존재하지 않을 경우
    */
-  async updateRegions(
-    uuid: string,
-    regionIds: string[],
-  ): Promise<BaseResponse> {
+  async updateRegion(uuid: string, regionId: string): Promise<BaseResponse> {
     // 사용자 존재 여부 확인
     await this.userService.findUserUuid(uuid);
 
-    // 기존 프로필 조회 또는 새로 생성 (지역 관계 포함)
-    let profile = await this.profilesRepository.findOne({
-      where: { user: { uuid } },
-      relations: ['regions'],
-    });
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
 
-    if (!profile) {
-      // 프로필이 없으면 새로 생성
-      const user = await this.userService.findUserUuid(uuid);
-      profile = this.profilesRepository.create({ user, regions: [] });
-    }
-
-    // 지역 정보 조회 (빈 배열이면 모든 지역 제거)
-    let regions: Regions[] = [];
-    if (regionIds.length > 0) {
-      regions = await this.regionsService.findRegionsByIds(regionIds);
-    }
+    let region = await this.regionsService.findRegionsByIds(regionId);
 
     // 프로필에 지역 설정 및 저장
-    profile.regions = regions;
+    profile.region = region;
     await this.profilesRepository.save(profile);
 
     return {
@@ -358,11 +342,13 @@ export class ProfilesService {
       message: '지역 정보가 성공적으로 업데이트되었습니다.',
       option: {
         meta_data: {
-          regions: regions.map((region) => ({
-            id: region.id,
-            city_first: region.city_first,
-            city_second: region.city_second,
-          })),
+          region: region
+            ? {
+                id: region.id,
+                city_first: region.city_first,
+                city_second: region.city_second,
+              }
+            : null,
         },
       },
     };
@@ -371,38 +357,26 @@ export class ProfilesService {
   /**
    * 사용자 프로필의 모임 유형을 업데이트합니다.
    * @param uuid 사용자 UUID
-   * @param meetingTypeIds 모임 유형 ID 배열
+   * @param meetingTypeId 모임 유형 ID (단일 선택)
    * @returns 처리 결과를 담은 BaseResponse
    * @throws NotFoundException 사용자나 모임 유형이 존재하지 않을 경우
    */
-  async updateMeetingTypes(
+  async updateMeetingType(
     uuid: string,
-    meetingTypeIds: number[],
+    meetingTypeId: number,
   ): Promise<BaseResponse> {
     // 사용자 존재 여부 확인
     await this.userService.findUserUuid(uuid);
 
-    // 기존 프로필 조회 또는 새로 생성 (모임 유형 관계 포함)
-    let profile = await this.profilesRepository.findOne({
-      where: { user: { uuid } },
-      relations: ['meeting_types'],
-    });
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
 
-    if (!profile) {
-      // 프로필이 없으면 새로 생성
-      const user = await this.userService.findUserUuid(uuid);
-      profile = this.profilesRepository.create({ user, meeting_types: [] });
-    }
-
-    // 모임 유형 정보 조회 (빈 배열이면 모든 모임 유형 제거)
-    let meetingTypes: MeetingTypes[] = [];
-    if (meetingTypeIds.length > 0) {
-      meetingTypes =
-        await this.meetingTypesService.findMeetingTypesByIds(meetingTypeIds);
-    }
+    // 모임 유형 정보 조회
+    let meetingType =
+      await this.meetingTypesService.findMeetingTypeById(meetingTypeId);
 
     // 프로필에 모임 유형 설정 및 저장
-    profile.meeting_types = meetingTypes;
+    profile.meeting_type = meetingType;
     await this.profilesRepository.save(profile);
 
     return {
@@ -410,10 +384,12 @@ export class ProfilesService {
       message: '모임 유형이 성공적으로 업데이트되었습니다.',
       option: {
         meta_data: {
-          meeting_types: meetingTypes.map((type) => ({
-            id: type.id,
-            name: type.name,
-          })),
+          meeting_type: meetingType
+            ? {
+                id: meetingType.id,
+                name: meetingType.name,
+              }
+            : null,
         },
       },
     };

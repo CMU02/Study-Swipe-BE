@@ -33,29 +33,18 @@ export class RegionsService {
   }
 
   /**
-   * 여러 ID로 지역 정보들을 조회합니다.
-   * @param ids 지역 ID 배열
-   * @returns 지역 엔티티 배열
+   * ID로 지역 정보를 조회합니다.
+   * @param id 지역 ID
+   * @returns 지역 엔티티
    * @throws NotFoundException 존재하지 않는 지역 ID가 포함된 경우
    */
-  async findRegionsByIds(ids: string[]): Promise<Regions[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-
-    const regions = await this.regionsRepository.find({
-      where: { id: In(ids) },
+  async findRegionsByIds(id: string): Promise<Regions> {
+    const regions = await this.regionsRepository.findOne({
+      where: { id },
     });
-
-    // 요청된 ID와 조회된 지역 수가 다르면 존재하지 않는 ID가 있음
-    if (regions.length !== ids.length) {
-      const foundIds = regions.map((region) => region.id);
-      const missingIds = ids.filter((id) => !foundIds.includes(id.toString()));
-      throw new NotFoundException(
-        `다음 지역 ID들이 존재하지 않습니다: ${missingIds.join(', ')}`,
-      );
+    if (!regions) {
+      throw new NotFoundException('해당 지역 ID가 존재하지 않습니다.');
     }
-
     return regions;
   }
 

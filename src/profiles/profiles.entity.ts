@@ -14,8 +14,6 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -83,9 +81,11 @@ export class Profiles {
   /**
    * 선호 인원 수
    */
-  @OneToOne(() => PreferredMemberCount, (pmc) => pmc.profiles)
+  @OneToOne(() => PreferredMemberCount, (pmc) => pmc.profiles, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'preferred_member_count_id' })
-  preferred_member_count: PreferredMemberCount;
+  preferred_member_count: PreferredMemberCount | null;
 
   /**
    * 연락 방법 (카카오톡, 디스코드 등)
@@ -103,17 +103,21 @@ export class Profiles {
   /**
    * 흡연 상태 (N:1 관계)
    */
-  @ManyToOne(() => SmokingStatus, (smoking_status) => smoking_status.profiles)
+  @ManyToOne(() => SmokingStatus, (smoking_status) => smoking_status.profiles, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'smoking_status_id' })
-  smoking_status: SmokingStatus;
+  smoking_status: SmokingStatus | null;
 
   /**
    * 사교모임 가능 여부 (N:1 관계)
    * @example 네, 아니오, 가끔
    */
-  @ManyToOne(() => SocialPrefs, (social_pref) => social_pref.profiles)
+  @ManyToOne(() => SocialPrefs, (social_pref) => social_pref.profiles, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'social_pref_id' })
-  social_pref: SocialPrefs;
+  social_pref: SocialPrefs | null;
 
   /**
    * 참여 기간 선호도 (N:1 관계)
@@ -121,9 +125,10 @@ export class Profiles {
   @ManyToOne(
     () => ParticipationTerms,
     (participationTerms) => participationTerms.profiles,
+    { nullable: true },
   )
   @JoinColumn({ name: 'participation_terms_id' })
-  participation_terms: ParticipationTerms;
+  participation_terms: ParticipationTerms | null;
 
   /**
    * 가능 요일 및 시간 (1:N 관계)
@@ -132,41 +137,29 @@ export class Profiles {
   profile_availability_weekly: ProfileAvailabilityWeekly[];
 
   /**
-   * 프로필에 표시될 지역
+   * 프로필에 표시될 지역 (N:1 관계, 단일 선택)
    */
-  @ManyToMany(() => Regions, { cascade: true, eager: false })
-  @JoinTable({
-    name: 'profiles_regions', // 생성될 중간 테이블 이름
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
-    inverseJoinColumn: {
-      name: 'regions_id',
-      referencedColumnName: 'id',
-    },
-  })
-  regions: Regions[];
+  @ManyToOne(() => Regions, (region) => region.profiles, { nullable: true })
+  @JoinColumn({ name: 'region_id' })
+  region: Regions;
 
   /**
-   * 모임유형
+   * 모임유형 (N:1 관계, 단일 선택)
    * - 온라인, 오프라인, 혼합
    */
-  @ManyToMany(() => MeetingTypes, { cascade: true, eager: false })
-  @JoinTable({
-    name: 'profiles_meeting_types',
-    joinColumn: { name: 'profiles_id', referencedColumnName: 'id' },
-    inverseJoinColumn: {
-      name: 'meeting_types_id',
-      referencedColumnName: 'id',
-    },
+  @ManyToOne(() => MeetingTypes, (meetingType) => meetingType.profiles, {
+    nullable: true,
   })
-  meeting_types: MeetingTypes[];
+  @JoinColumn({ name: 'meeting_type_id' })
+  meeting_type: MeetingTypes;
 
   /**
    * 전공 (N:1 관계, 단일 선택)
    * - 컴퓨터공학, 경영학, 디자인학 등
    */
-  @ManyToOne(() => Major, (major) => major.profiles)
+  @ManyToOne(() => Major, (major) => major.profiles, { nullable: true })
   @JoinColumn({ name: 'major_id' })
-  major: Major;
+  major: Major | null;
 
   /**
    * 협업 성향 (N:1 관계, 단일 선택)
@@ -174,9 +167,9 @@ export class Profiles {
    * - 같이 성장(피어)
    * - 배우고 싶음(러너)
    */
-  @ManyToOne(() => CollabStyle, (collab) => collab.profiles)
+  @ManyToOne(() => CollabStyle, (collab) => collab.profiles, { nullable: true })
   @JoinColumn({ name: 'collab_style_id' })
-  collab_style: CollabStyle;
+  collab_style: CollabStyle | null;
 
   /**
    * 생성 일시

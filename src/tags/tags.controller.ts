@@ -1,4 +1,4 @@
-import { Body, Controller, Post, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { TagResolverService } from './tags_resolver.service';
 
 @Controller('tags')
@@ -6,10 +6,12 @@ export class TagsController {
   constructor(private readonly tags: TagResolverService) {}
 
   /**
+   * 사용법
    * POST /tags/resolve
    * Body: { "tags": ["FrontEnd","프론트","FE","백엔드"] }
    * 응답: { uniqueCanonical: [...], mappings: [...] }
    */
+
   @Post('resolve')
   async resolve(@Body() body: { tags?: string[] }) {
     const raw = (body?.tags ?? []).map(s => String(s).trim()).filter(Boolean);

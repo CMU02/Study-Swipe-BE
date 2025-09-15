@@ -93,6 +93,105 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+
+## How to Use (사용 방식)
+
+- 질문 생성 
+  방식 - POST
+  http://localhost:3000/ai/make-questions
+  ##  [SAMPLE] 
+  ```
+  {
+    "tags": ["BackEnd", "FrontEnd"]
+  }
+  ```
+  ##  [ANSWER]
+  ```
+  {
+    "items": [
+        {
+            "tag": "백엔드",
+            "questions": [
+                {
+                    "level": "기초",
+                    "text": "백엔드 개발의 기본 개념을 이해하고 있습니까?"
+                },
+                {
+                    "level": "경험",
+                    "text": "RESTful API를 설계하고 구현한 경험이 있습니까?"
+                },
+                {
+                    "level": "응용",
+                    "text": "대규모 트래픽을 처리하는 백엔드 시스템을 최적화한 경험이 있습니까?"
+                }
+            ]
+        },
+        {
+            "tag": "프론트엔드",
+            "questions": [
+                {
+                    "level": "기초",
+                    "text": "HTML, CSS, JavaScript의 기본 구조와 사용법을 알고 있습니까?"
+                },
+                {
+                    "level": "경험",
+                    "text": "React나 Vue.js 같은 프론트엔드 프레임워크를 사용해 본 경험이 있습니까?"
+                },
+                {
+                    "level": "응용",
+                    "text": "복잡한 프론트엔드 애플리케이션의 성능을 최적화한 경험이 있습니까?"
+                  }
+              ]
+          }
+      ]
+  }
+  ```
+
+- 태그 중복 검출
+  방식 - POST
+  http://localhost:3000/tags/resolve
+  ##  [SAMPLE] 
+  ```
+  {
+    "tags": ["BackEnd", "FrontEnd"]
+  }
+  ```
+  ##  [ANSWER] 
+  ```
+  {
+    "uniqueCanonical": [
+        "백엔드",
+        "프론트엔드"
+    ],
+    "mappings": [
+        {
+            "raw": "스프링 부트",
+            "key": "스프링부트",
+            "canonId": "ESCO:it.backend_developer",
+            "canonical": "백엔드",
+            "confidence": 0.99
+        },
+        {
+            "raw": "백엔드",
+            "key": "백엔드",
+            "canonId": "ESCO:it.backend_developer",
+            "canonical": "백엔드",
+            "confidence": 0.99
+        },
+        {
+            "raw": "프론트-엔드",
+            "key": "프론트엔드",
+            "canonId": "ESCO:it.frontend_developer",
+            "canonical": "프론트엔드",
+            "confidence": 0.99
+          }
+      ]
+  }
+
+  ```
+
+
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

@@ -7,12 +7,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CollabStyleModule } from './collab_style/collab_style.module';
-import { DaysOfWeekModule } from './days_of_week/days_of_week.module';
 import { MailerModule } from './mailer/mailer.module';
 import { MajorModule } from './major/major.module';
 import { MeetingTypesModule } from './meeting_types/meeting_types.module';
-import { ParticipationTermsModule } from './participation_terms/participation_terms.module';
-import { ProfileAvailabilityWeeklyModule } from './profile_availability_weekly/profile_availability_weekly.module';
+import { ParticipationInfoModule } from './participation_info/participation_info.module';
+import { PreferredMemberCountModule } from './preferred_member_count/preferred_member_count.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { RegionsModule } from './regions/regions.module';
 import { SmokingStatusModule } from './smoking_status/smoking_status.module';
@@ -20,7 +19,6 @@ import { SocialPrefsModule } from './social_prefs/social_prefs.module';
 import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
-import { PreferredMemberCountModule } from './preferred_member_count/preferred_member_count.module';
 
 @Module({
   imports: [
@@ -50,7 +48,7 @@ import { PreferredMemberCountModule } from './preferred_member_count/preferred_m
     UniversitiesModule,
     SmokingStatusModule,
     SocialPrefsModule,
-    ParticipationTermsModule,
+    ParticipationInfoModule,
     RegionsModule,
     MeetingTypesModule,
     MajorModule,
@@ -58,8 +56,6 @@ import { PreferredMemberCountModule } from './preferred_member_count/preferred_m
     UserModule,
     ProfilesModule,
     AuthModule,
-    DaysOfWeekModule,
-    ProfileAvailabilityWeeklyModule,
     TermsOfUseModule,
     PreferredMemberCountModule,
   ],

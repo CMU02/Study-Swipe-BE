@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CollabStyleModule } from 'src/collab_style/collab_style.module';
 import { MajorModule } from 'src/major/major.module';
 import { MeetingTypesModule } from 'src/meeting_types/meeting_types.module';
+import { ParticipationInfoModule } from 'src/participation_info/participation_info.module';
 import { PreferredMemberCountModule } from 'src/preferred_member_count/preferred_member_count.module';
 import { RegionsModule } from 'src/regions/regions.module';
 import { SmokingStatusModule } from 'src/smoking_status/smoking_status.module';
@@ -26,6 +27,7 @@ import { ProfilesService } from './profiles.service';
     PreferredMemberCountModule, // 선호 인원 수 관리 기능
     RegionsModule, // 지역 관리 기능
     MeetingTypesModule, // 모임 유형 관리 기능
+    ParticipationInfoModule, // 참여 정보 관리 기능
     CollabStyleModule, // 협업 성향 관리 기능
     MajorModule, // 전공 관리 기능
   ],

@@ -1,9 +1,8 @@
 import { CollabStyle } from 'src/collab_style/collab_style.entity';
 import { Major } from 'src/major/major.entity';
 import { MeetingTypes } from 'src/meeting_types/meeting_types.entity';
-import { ParticipationTerms } from 'src/participation_terms/participation_terms.entity';
+import { participationInfo } from 'src/participation_info/participation_info.entity';
 import { PreferredMemberCount } from 'src/preferred_member_count/preferred_member_count.entity';
-import { ProfileAvailabilityWeekly } from 'src/profile_availability_weekly/profile_availability_weekly.entity';
 import { Regions } from 'src/regions/regions.entity';
 import { SmokingStatus } from 'src/smoking_status/smoking_status.entity';
 import { SocialPrefs } from 'src/social_prefs/social_prefs.entity';
@@ -15,7 +14,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -120,21 +118,14 @@ export class Profiles {
   social_pref: SocialPrefs | null;
 
   /**
-   * 참여 기간 선호도 (N:1 관계)
+   * 참여 정보 (1:1 관계)
    */
-  @ManyToOne(
-    () => ParticipationTerms,
-    (participationTerms) => participationTerms.profiles,
+  @OneToOne(
+    () => participationInfo,
+    (participationInfo) => participationInfo.profile,
     { nullable: true },
   )
-  @JoinColumn({ name: 'participation_terms_id' })
-  participation_terms: ParticipationTerms | null;
-
-  /**
-   * 가능 요일 및 시간 (1:N 관계)
-   */
-  @OneToMany(() => ProfileAvailabilityWeekly, (paw) => paw.profiles)
-  profile_availability_weekly: ProfileAvailabilityWeekly[];
+  participation_info: participationInfo | null;
 
   /**
    * 프로필에 표시될 지역 (N:1 관계, 단일 선택)

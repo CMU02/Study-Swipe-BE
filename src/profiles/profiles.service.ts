@@ -1,20 +1,19 @@
 import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { BaseResponse, UpsertProps } from 'src/base_response';
 import { CollabStyleService } from 'src/collab_style/collab_style.service';
 import { MajorService } from 'src/major/major.service';
 import { MeetingTypesService } from 'src/meeting_types/meeting_types.service';
+import { ParticipationInfoService } from 'src/participation_info/participation_info.service';
 import { PreferredMemberCountService } from 'src/preferred_member_count/preferred_member_count.service';
 import { RegionsService } from 'src/regions/regions.service';
 import { SmokingStatusService } from 'src/smoking_status/smoking_status.service';
 import { SocialPrefsService } from 'src/social_prefs/social_prefs.service';
 import { UserService } from 'src/user/user.service';
+import { Repository } from 'typeorm';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfileStudyDto } from './dto/profile_study.dto';
 import { Profiles } from './profiles.entity';
-import { Regions } from 'src/regions/regions.entity';
-import { MeetingTypes } from 'src/meeting_types/meeting_types.entity';
 
 /**
  * 사용자 프로필 관련 비즈니스 로직을 처리하는 서비스
@@ -31,6 +30,7 @@ export class ProfilesService {
     private readonly preferredMemberCountService: PreferredMemberCountService,
     private readonly regionsService: RegionsService,
     private readonly meetingTypesService: MeetingTypesService,
+    private readonly participationInfoService: ParticipationInfoService,
     private readonly collabStyleService: CollabStyleService,
     private readonly majorService: MajorService,
   ) {}
@@ -51,7 +51,7 @@ export class ProfilesService {
       relations: [
         'smoking_status',
         'social_pref',
-        'participation_terms',
+        'participation_info',
         'preferred_member_count',
         'region',
         'meeting_type',
@@ -464,6 +464,60 @@ export class ProfilesService {
           major: {
             id: major.id,
             name: major.name,
+          },
+        },
+      },
+    };
+  }
+
+  /**
+   * 사용자 프로필의 참여 정보를 업데이트합니다.
+   * @param uuid 사용자 UUID
+   * @param period 참여기간 (개월)
+   * @param periodLength 참여기간 길이
+   * @param startTime 시작시간
+   * @param endTime 마침시간
+   * @returns 처리 결과를 담은 BaseResponse
+   * @throws NotFoundException 사용자가 존재하지 않을 경우
+   */
+  async updateParticipationInfo(
+    uuid: string,
+    period: number,
+    periodLength: string,
+    startTime: string,
+    endTime: string,
+  ): Promise<BaseResponse> {
+    // 사용자 존재 여부 확인
+    await this.userService.findUserUuid(uuid);
+
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
+
+    // 사용자별 개별 참여 정보 생성 또는 업데이트
+    const participationInfo =
+      await this.participationInfoService.createOrUpdateParticipationInfo(
+        profile,
+        period,
+        periodLength,
+        startTime,
+        endTime,
+      );
+
+    // 프로필에 참여 정보 연결 (1:1 관계이므로 자동으로 연결됨)
+    profile.participation_info = participationInfo;
+    await this.profilesRepository.save(profile);
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '참여 정보가 성공적으로 업데이트되었습니다.',
+      option: {
+        meta_data: {
+          participation_info: {
+            id: participationInfo.id,
+            period: participationInfo.period,
+            period_length: participationInfo.period_length,
+            start_time: participationInfo.start_time,
+            end_time: participationInfo.end_time,
           },
         },
       },

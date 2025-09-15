@@ -16,6 +16,7 @@ import { ProfileContactInfoDto } from './dto/profile_contact_info.dto';
 import { ProfileGoalsNoteDto } from './dto/profile_goals_note.dto';
 import { ProfileMajorDto } from './dto/profile_major.dto';
 import { ProfileMeetingTypesDto } from './dto/profile_meeting_types.dto';
+import { ProfileParticipationInfoDto } from './dto/profile_participation_info.dto';
 import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_count.dto';
 import { ProfileRegionsDto } from './dto/profile_regions.dto';
 import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
@@ -262,5 +263,26 @@ export class ProfilesController {
   ): Promise<BaseResponse> {
     const userUuid = req.user.uuid;
     return this.profilesService.updateMajor(userUuid, dto.major_name);
+  }
+
+  /**
+   * 사용자의 참여 정보를 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 참여 정보 (기간, 시간 등)
+   * @returns 참여 정보 업데이트 결과
+   */
+  @Patch('/participation-info')
+  async updateParticipationInfo(
+    @Request() req,
+    @Body() dto: ProfileParticipationInfoDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateParticipationInfo(
+      userUuid,
+      dto.period,
+      dto.period_length,
+      dto.start_time,
+      dto.end_time,
+    );
   }
 }

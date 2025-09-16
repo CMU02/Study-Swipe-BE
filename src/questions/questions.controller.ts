@@ -1,6 +1,7 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { QuestionsService } from './questions.service';
+import { Item, QuestionsService } from './questions.service';
 import { TagResolverService } from '../tags/tags_resolver.service';
+import { ScoreService } from './score.service';
 
 const normalizeKey = (s: string) =>
   s.normalize('NFKC').trim().toLowerCase().replace(/[\s\-\_\/]/g, '');
@@ -12,6 +13,8 @@ export class QuestionsController {
   constructor(
     private readonly qs: QuestionsService,
     private readonly tags: TagResolverService,
+    private readonly scorer: ScoreService,
+
   ) {}
 
   @Post('make-questions')
@@ -53,5 +56,14 @@ export class QuestionsController {
     // 3) 중복 없음 → 디듑된(중복 제거된) 표준 태그로 질문 생성 (최대 5개 유지)
     const canonicalTags = resolved.uniqueCanonical.slice(0, 5);
     return this.qs.makeQuestions(canonicalTags);
+  }
+
+  @Post('score')
+  score(@Body() body: { items?: Item[]; answers?: Array<{ no: number; value: number }> }) {
+    const items = (body?.items ?? []) as Item[];
+    const answers = (body?.answers ?? []) as Array<{ no: number; value: number }>;
+    if (!items.length) throw new BadRequestException('items(문항 목록)을 포함해 주세요.');
+    if (!answers.length) throw new BadRequestException('answers(번호/점수) 배열을 포함해 주세요.');
+    return this.scorer.score({ items, answers });
   }
 }

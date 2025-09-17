@@ -190,6 +190,137 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
   ```
 
+- 점수 산출
+  방식 - POST
+  http://localhost:3000/ai/score
+  ##  [SAMPLE] 
+  ```
+  {
+  "items": [
+        {
+            "tag": "백엔드",
+            "questions": [
+                {
+                    "no": 1,
+                    "level": "기초",
+                    "text": "백엔드 개발의 기본적인 개념과 역할을 이해하고 있다."
+                },
+                {
+                    "no": 2,
+                    "level": "경험",
+                    "text": "다양한 백엔드 프레임워크를 사용하여 프로젝트를 진행한 경험이 있다."
+                },
+                {
+                    "no": 3,
+                    "level": "응용",
+                    "text": "복잡한 서버 아키텍처를 설계하고 구현할 수 있다."
+                }
+            ]
+        },
+        {
+            "tag": "프론트엔드",
+            "questions": [
+                {
+                    "no": 4,
+                    "level": "기초",
+                    "text": "HTML, CSS, JavaScript의 기본적인 사용법을 알고 있다."
+                },
+                {
+                    "no": 5,
+                    "level": "경험",
+                    "text": "프론트엔드 프레임워크(예: React, Angular)를 사용하여 웹 애플리케이션을 개발한 경험이 있다."
+                },
+                {
+                    "no": 6,
+                    "level": "응용",
+                    "text": "사용자 경험을 고려한 고급 프론트엔드 기능을 구현할 수 있다."
+                }
+            ]
+        }
+    ],
+    "answers": [
+      { "no": 1, "value": 4 },
+      { "no": 2, "value": 3 },
+      { "no": 3, "value": 5 },
+      { "no": 4, "value": 2 },
+      { "no": 5, "value": 3 },
+      { "no": 6, "value": 4 }
+    ]
+  }
+  ```
+  ##  [ANSWER] 
+  - tag : 사용자가 넣은 태그
+  - count : 문항 개수
+  - avg5 : (문제 점수 총합) / count, 평균
+  - wavg5 : (기초 * 1.0 + 경험 * 1.2 + 응용 * 1.4) / (1.0 + 1.2 + 1.4), 가중치
+  - avg100 : 100 점 기준 평균
+  - wavg100 : 100 점 기준 가중치 평균
+  - overall : 사용자에 대한 전반적인 점수 평가 (차후 코사인 정렬과 동일 점수대로 매칭)
+
+  ```
+  {
+    "perTag": [
+        {
+            "tag": "백엔드",
+            "count": 3,
+            "avg5": 4,
+            "wavg5": 4.06,
+            "avg100": 80, 
+            "wavg100": 81.11,
+            "details": [
+                {
+                    "no": 1,
+                    "level": "기초",
+                    "value": 4
+                },
+                {
+                    "no": 2,
+                    "level": "경험",
+                    "value": 3
+                },
+                {
+                    "no": 3,
+                    "level": "응용",
+                    "value": 5
+                }
+            ]
+        },
+        {
+            "tag": "프론트엔드",
+            "count": 3,
+            "avg5": 3,
+            "wavg5": 3.11,
+            "avg100": 60,
+            "wavg100": 62.22,
+            "details": [
+                {
+                    "no": 4,
+                    "level": "기초",
+                    "value": 2
+                },
+                {
+                    "no": 5,
+                    "level": "경험",
+                    "value": 3
+                },
+                {
+                    "no": 6,
+                    "level": "응용",
+                    "value": 4
+                }
+            ]
+        }
+    ],
+      "overall": {
+          "count": 6,
+          "avg5": 3.5,
+          "wavg5": 3.58,
+          "avg100": 70,
+          "wavg100": 71.67
+      }
+  }
+
+  ```
 
 
 ## License

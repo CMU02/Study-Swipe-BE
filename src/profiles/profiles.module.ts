@@ -13,6 +13,7 @@ import { UserModule } from 'src/user/user.module';
 import { ProfilesController } from './profiles.controller';
 import { Profiles } from './profiles.entity';
 import { ProfilesService } from './profiles.service';
+import { StudyTagsModule } from 'src/study_tags/study_tags.module';
 
 /**
  * 사용자 프로필 관련 기능을 제공하는 모듈
@@ -30,6 +31,7 @@ import { ProfilesService } from './profiles.service';
     ParticipationInfoModule, // 참여 정보 관리 기능
     CollabStyleModule, // 협업 성향 관리 기능
     MajorModule, // 전공 관리 기능
+    StudyTagsModule, // 공부 태그 관리 기능
   ],
   providers: [
     ProfilesService, // 프로필 비즈니스 로직

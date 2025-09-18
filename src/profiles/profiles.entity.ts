@@ -6,6 +6,7 @@ import { PreferredMemberCount } from 'src/preferred_member_count/preferred_membe
 import { Regions } from 'src/regions/regions.entity';
 import { SmokingStatus } from 'src/smoking_status/smoking_status.entity';
 import { SocialPrefs } from 'src/social_prefs/social_prefs.entity';
+import { StudyTags } from 'src/study_tags/study_tags.entity';
 import { User } from 'src/user/user.entity';
 import {
   Column,
@@ -14,6 +15,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -161,6 +163,9 @@ export class Profiles {
   @ManyToOne(() => CollabStyle, (collab) => collab.profiles, { nullable: true })
   @JoinColumn({ name: 'collab_style_id' })
   collab_style: CollabStyle | null;
+
+  @OneToMany(() => StudyTags, (study_tags) => study_tags.profiles)
+  study_tags: StudyTags;
 
   /**
    * 생성 일시

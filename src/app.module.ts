@@ -19,6 +19,8 @@ import { SocialPrefsModule } from './social_prefs/social_prefs.module';
 import { TermsOfUseModule } from './terms_of_use/terms_of_use.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
+import { StudyTagsModule } from './study_tags/study_tags.module';
+import { ProficiencyLevelsModule } from './proficiency_levels/proficiency_levels.module';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { UserModule } from './user/user.module';
     AuthModule,
     TermsOfUseModule,
     PreferredMemberCountModule,
+    StudyTagsModule,
+    ProficiencyLevelsModule,
   ],
   controllers: [AppController],
   providers: [

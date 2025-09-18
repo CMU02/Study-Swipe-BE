@@ -22,6 +22,7 @@ import { ProfileRegionsDto } from './dto/profile_regions.dto';
 import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
 import { ProfileStudyDto } from './dto/profile_study.dto';
 import { ProfilesService } from './profiles.service';
+import { ProfileCreateStudyTagsDto } from './dto/profile_study_tag.dto';
 
 /**
  * 사용자 프로필 관련 HTTP 엔드포인트를 처리하는 컨트롤러
@@ -68,7 +69,7 @@ export class ProfilesController {
    * @param dto 수정할 프로필 정보
    * @returns 프로필 수정 결과
    */
-  @Patch('/update-profile')
+  @Post('/update-profile')
   async updateMyProfile(
     @Request() req,
     @Body() dto: ProfileBasicDto,
@@ -87,7 +88,7 @@ export class ProfilesController {
    * @param smokingStatusName 흡연 상태 이름
    * @returns 흡연 상태 업데이트 결과
    */
-  @Patch('/smoking-status')
+  @Post('/smoking-status')
   async updateSmokingStatus(
     @Request() req,
     @Body() { smoking_status_name }: { smoking_status_name: string },
@@ -105,7 +106,7 @@ export class ProfilesController {
    * @param dto 사교모임 선호도 정보
    * @returns 사교모임 선호도 업데이트 결과
    */
-  @Patch('/social-pref')
+  @Post('/social-pref')
   async updateSocialPref(
     @Request() req,
     @Body() dto: ProfileSocialPrefDto,
@@ -123,7 +124,7 @@ export class ProfilesController {
    * @param dto 선호 인원 수 정보
    * @returns 선호 인원 수 업데이트 결과
    */
-  @Patch('/preferred-member-count')
+  @Post('/preferred-member-count')
   async updatePreferredMemberCount(
     @Request() req,
     @Body() dto: ProfilePreferredMemberCountDto,
@@ -142,7 +143,7 @@ export class ProfilesController {
    * @param dto 학습 관련 정보 (목표, 활동 반경, 연락처)
    * @returns 학습 정보 업데이트 결과
    */
-  @Patch('/study-info')
+  @Post('/study-info')
   async updateStudyProfile(
     @Request() req,
     @Body() dto: ProfileStudyDto,
@@ -157,7 +158,7 @@ export class ProfilesController {
    * @param dto 학습 목표 정보
    * @returns 학습 목표 업데이트 결과
    */
-  @Patch('/goals-note')
+  @Post('/goals-note')
   async updateGoalsNote(
     @Request() req,
     @Body() dto: ProfileGoalsNoteDto,
@@ -172,7 +173,7 @@ export class ProfilesController {
    * @param dto 활동 반경 정보
    * @returns 활동 반경 업데이트 결과
    */
-  @Patch('/activity-radius')
+  @Post('/activity-radius')
   async updateActivityRadius(
     @Request() req,
     @Body() dto: ProfileActivityRadiusDto,
@@ -190,7 +191,7 @@ export class ProfilesController {
    * @param dto 연락 방법 정보
    * @returns 연락 방법 업데이트 결과
    */
-  @Patch('/contact-info')
+  @Post('/contact-info')
   async updateContactInfo(
     @Request() req,
     @Body() dto: ProfileContactInfoDto,
@@ -205,7 +206,7 @@ export class ProfilesController {
    * @param dto 지역 ID (단일 선택)
    * @returns 지역 정보 업데이트 결과
    */
-  @Patch('/region')
+  @Post('/region')
   async updateRegion(
     @Request() req,
     @Body() dto: ProfileRegionsDto,
@@ -220,7 +221,7 @@ export class ProfilesController {
    * @param dto 모임 유형 ID (단일 선택)
    * @returns 모임 유형 업데이트 결과
    */
-  @Patch('/meeting-type')
+  @Post('/meeting-type')
   async updateMeetingType(
     @Request() req,
     @Body() dto: ProfileMeetingTypesDto,
@@ -238,7 +239,7 @@ export class ProfilesController {
    * @param dto 협업 성향 ID (단일 선택)
    * @returns 협업 성향 업데이트 결과
    */
-  @Patch('/collab-style')
+  @Post('/collab-style')
   async updateCollabStyle(
     @Request() req,
     @Body() dto: ProfileCollabStyleDto,
@@ -256,7 +257,7 @@ export class ProfilesController {
    * @param dto 전공명 (사용자 직접 입력)
    * @returns 전공 업데이트 결과
    */
-  @Patch('/major')
+  @Post('/major')
   async updateMajor(
     @Request() req,
     @Body() dto: ProfileMajorDto,
@@ -271,7 +272,7 @@ export class ProfilesController {
    * @param dto 참여 정보 (기간, 시간 등)
    * @returns 참여 정보 업데이트 결과
    */
-  @Patch('/participation-info')
+  @Post('/participation-info')
   async updateParticipationInfo(
     @Request() req,
     @Body() dto: ProfileParticipationInfoDto,
@@ -284,5 +285,20 @@ export class ProfilesController {
       dto.start_time,
       dto.end_time,
     );
+  }
+
+  /**
+   * 사용자의 공부 태그를 생성하거나 업데이트합니다.
+   * @param req 인증된 사용자 요청 객체
+   * @param dto 공부 태그 목록 (최대 5개)
+   * @returns 공부 태그 생성/업데이트 결과
+   */
+  @Post('/study-tags')
+  async updateStudyTags(
+    @Request() req,
+    @Body() dto: ProfileCreateStudyTagsDto,
+  ): Promise<BaseResponse> {
+    const userUuid = req.user.uuid;
+    return this.profilesService.updateStudyTags(userUuid, dto.study_tags);
   }
 }

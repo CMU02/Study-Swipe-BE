@@ -14,6 +14,7 @@ import { Repository } from 'typeorm';
 import { ProfileBasicDto } from './dto/profile_basic.dto';
 import { ProfileStudyDto } from './dto/profile_study.dto';
 import { Profiles } from './profiles.entity';
+import { StudyTagsService } from 'src/study_tags/study_tags.service';
 
 /**
  * 사용자 프로필 관련 비즈니스 로직을 처리하는 서비스
@@ -33,6 +34,7 @@ export class ProfilesService {
     private readonly participationInfoService: ParticipationInfoService,
     private readonly collabStyleService: CollabStyleService,
     private readonly majorService: MajorService,
+    private readonly studyTagsService: StudyTagsService,
   ) {}
 
   /**
@@ -521,6 +523,40 @@ export class ProfilesService {
           },
         },
       },
+    };
+  }
+
+  /**
+   * 사용자의 공부 태그를 생성하거나 업데이트합니다.
+   * @param uuid 사용자 UUID
+   * @param study_tags 공부 태그 데이터 배열
+   * @returns 처리 결과를 담은 BaseResponse
+   * @throws NotFoundException 사용자가 존재하지 않을 경우
+   */
+  async updateStudyTags(
+    uuid: string,
+    study_tags: Array<{
+      tag_name: string;
+      priority: number;
+      proficiency_score?: number;
+      proficiency_level_id?: number;
+    }>,
+  ): Promise<BaseResponse> {
+    // 사용자 존재 여부 확인
+    await this.userService.findUserUuid(uuid);
+
+    // 기존 프로필 조회 또는 새로 생성
+    const profile = await this.findOrCreateProfile(uuid);
+
+    // 공부 태그 생성/업데이트 (Upsert)
+    const studyTagsInfo = await this.studyTagsService.createStudyTags(
+      profile,
+      study_tags,
+    );
+
+    return {
+      status_code: HttpStatus.OK,
+      message: '공부 태그가 성공적으로 업데이트되었습니다.',
     };
   }
 

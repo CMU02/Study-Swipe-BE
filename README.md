@@ -96,7 +96,7 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## How to Use (사용 방식)
 
-<h2>질문 생성 </h2>
+- 질문 생성 
   방식 - POST
   http://localhost:3000/ai/make-questions
   ##  [SAMPLE] 
@@ -147,7 +147,7 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
   }
   ```
 
-<h2>태그 중복 검출 </h2>
+- 태그 중복 검출
   방식 - POST
   http://localhost:3000/tags/resolve
   ##  [SAMPLE] 
@@ -190,7 +190,7 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
   ```
 
-<h2>점수 산출 Ver.2 </h2>
+- 점수 산출 Ver.2
   방식 - POST
   http://localhost:3000/ai/score
   ##  [SAMPLE] 

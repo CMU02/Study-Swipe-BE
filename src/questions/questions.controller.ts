@@ -1,10 +1,15 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { Item, QuestionsService } from './questions.service';
 import { TagResolverService } from '../tags/tags_resolver.service';
-import { ScoreService } from './score.service';
+import { Level, ScoreResponse, ScoreService } from './score.service';
 
 const normalizeKey = (s: string) =>
   s.normalize('NFKC').trim().toLowerCase().replace(/[\s\-\_\/]/g, '');
+
+type InComingAnswerBlock = {
+  tag: string;
+  questions: Array<{ no: number; level: Level; value: number}>;
+}
 
 // GPT 관련은 웬만해서는 ai 로 통일
 
@@ -59,11 +64,15 @@ export class QuestionsController {
   }
 
   @Post('score')
-  score(@Body() body: { items?: Item[]; answers?: Array<{ no: number; value: number }> }) {
-    const items = (body?.items ?? []) as Item[];
-    const answers = (body?.answers ?? []) as Array<{ no: number; value: number }>;
-    if (!items.length) throw new BadRequestException('items(문항 목록)을 포함해 주세요.');
-    if (!answers.length) throw new BadRequestException('answers(번호/점수) 배열을 포함해 주세요.');
-    return this.scorer.score({ items, answers });
-  }
+    async scoreByBlocks(
+      @Body()
+      body: { answers?: InComingAnswerBlock[] },
+    ): Promise<ScoreResponse> {
+      const blocks = body?.answers ?? [];
+      if (!Array.isArray(blocks) || blocks.length === 0) {
+        throw new BadRequestException('answers 배열(태그별 블록)을 제공해주세요.');
+      }
+      return this.scorer.scoreFromBlocks(blocks);
+    }
 }
+

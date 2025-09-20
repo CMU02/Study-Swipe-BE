@@ -1,6 +1,4 @@
--- =========================================================
 -- 최소 스키마: uuid / value(name) / metatag(source, tag)
--- =========================================================
 
 -- 0) 확장
 CREATE EXTENSION IF NOT EXISTS vector;
@@ -15,9 +13,6 @@ CREATE TABLE IF NOT EXISTS canonical_tags (
   ext_code   TEXT,                   -- 외부 표준 코드(예: ESCO 코드 등)
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
--- (선택) value 유니크로 중복 방지 원하면 주석 해제
--- CREATE UNIQUE INDEX IF NOT EXISTS uq_canonical_tags_value ON canonical_tags(value);
 
 -- 2) 메타태그 (source, tag)
 CREATE TABLE IF NOT EXISTS canonical_tag_meta (

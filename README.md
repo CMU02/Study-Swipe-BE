@@ -93,6 +93,202 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
+
+## How to Use (사용 방식)
+
+- 질문 생성 
+  방식 - POST
+  http://localhost:3000/ai/make-questions
+  ##  [SAMPLE] 
+  ```
+  {
+    "tags": ["BackEnd", "FrontEnd"]
+  }
+  ```
+  ##  [ANSWER]
+  ```
+  {
+    "items": [
+        {
+            "tag": "백엔드",
+            "questions": [
+                {
+                    "level": "기초",
+                    "text": "백엔드 개발의 기본 개념을 이해하고 있습니까?"
+                },
+                {
+                    "level": "경험",
+                    "text": "RESTful API를 설계하고 구현한 경험이 있습니까?"
+                },
+                {
+                    "level": "응용",
+                    "text": "대규모 트래픽을 처리하는 백엔드 시스템을 최적화한 경험이 있습니까?"
+                }
+            ]
+        },
+        {
+            "tag": "프론트엔드",
+            "questions": [
+                {
+                    "level": "기초",
+                    "text": "HTML, CSS, JavaScript의 기본 구조와 사용법을 알고 있습니까?"
+                },
+                {
+                    "level": "경험",
+                    "text": "React나 Vue.js 같은 프론트엔드 프레임워크를 사용해 본 경험이 있습니까?"
+                },
+                {
+                    "level": "응용",
+                    "text": "복잡한 프론트엔드 애플리케이션의 성능을 최적화한 경험이 있습니까?"
+                  }
+              ]
+          }
+      ]
+  }
+  ```
+
+- 태그 중복 검출
+  방식 - POST
+  http://localhost:3000/tags/resolve
+  ##  [SAMPLE] 
+  ```
+  {
+    "tags": ["BackEnd", "FrontEnd"]
+  }
+  ```
+  ##  [ANSWER] 
+  ```
+  {
+    "uniqueCanonical": [
+        "백엔드",
+        "프론트엔드"
+    ],
+    "mappings": [
+        {
+            "raw": "스프링 부트",
+            "key": "스프링부트",
+            "canonId": "ESCO:it.backend_developer",
+            "canonical": "백엔드",
+            "confidence": 0.99
+        },
+        {
+            "raw": "백엔드",
+            "key": "백엔드",
+            "canonId": "ESCO:it.backend_developer",
+            "canonical": "백엔드",
+            "confidence": 0.99
+        },
+        {
+            "raw": "프론트-엔드",
+            "key": "프론트엔드",
+            "canonId": "ESCO:it.frontend_developer",
+            "canonical": "프론트엔드",
+            "confidence": 0.99
+          }
+      ]
+  }
+
+  ```
+
+- 점수 산출 Ver.2
+  방식 - POST
+  http://localhost:3000/ai/score
+  ##  [SAMPLE] 
+  ```
+    {
+    "answers": [
+        {
+        "tag": "백엔드",
+        "questions": [
+            { "no": 1, "level": "기초", "value": 4 },
+            { "no": 2, "level": "경험", "value": 3 },
+            { "no": 3, "level": "응용", "value": 5 }
+        ]
+        },
+        {
+        "tag": "프론트엔드",
+        "questions": [
+            { "no": 4, "level": "기초", "value": 2 },
+            { "no": 5, "level": "경험", "value": 3 },
+            { "no": 6, "level": "응용", "value": 4 }
+        ]
+        }
+    ]
+    }
+  ```
+  ##  [ANSWER] 
+  - tag : 사용자가 넣은 태그
+  - count : 문항 개수
+  - sum : 각 문항 점수의 총합 
+  - wavg(가중치 평균) : (기초 * 1.0 + 경험 * 1.2 + 응용 * 1.4) / (1.0 + 1.2 + 1.4)
+  - grade : 사용자의 등급 (초급, 중급, 상급)
+  - details : 문제에 대한 정보
+  - overall : 사용자에 대한 전반적인 점수 평가 (차후 코사인 정렬과 동일 점수대로 매칭)
+  - overallGrade : 사용자의 전체적인 등급
+
+  ```
+  {
+    "perTag": [
+        {
+            "tag": "백엔드",
+            "count": 3,
+            "sum": 12,
+            "wavg": 4.06,
+            "grade": "상급",
+            "details": [
+                {
+                    "no": 1,
+                    "level": "기초",
+                    "value": 4
+                },
+                {
+                    "no": 2,
+                    "level": "경험",
+                    "value": 3
+                },
+                {
+                    "no": 3,
+                    "level": "응용",
+                    "value": 5
+                }
+            ]
+        },
+        {
+            "tag": "프론트엔드",
+            "count": 3,
+            "sum": 9,
+            "wavg": 3.11,
+            "grade": "중급",
+            "details": [
+                {
+                    "no": 4,
+                    "level": "기초",
+                    "value": 2
+                },
+                {
+                    "no": 5,
+                    "level": "경험",
+                    "value": 3
+                },
+                {
+                    "no": 6,
+                    "level": "응용",
+                    "value": 4
+                }
+            ]
+        }
+    ],
+    "overall": {
+        "count": 6,
+        "avg5": 3.5,
+        "wavg": 3.58,
+        "sumAvg": 10.5,
+        "overallGrade": "중급"
+    }
+}
+  ```
+
+
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

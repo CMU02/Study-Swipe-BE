@@ -22,6 +22,7 @@ import { UserModule } from './user/user.module';
 import { StudyTagsModule } from './study_tags/study_tags.module';
 import { ProficiencyLevelsModule } from './proficiency_levels/proficiency_levels.module';
 import { QuestionsModule } from './questions/questions.modue';
+import { VectorModule } from './vector/vector.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { QuestionsModule } from './questions/questions.modue';
     StudyTagsModule,
     ProficiencyLevelsModule,
     QuestionsModule,
+    VectorModule,
   ],
   controllers: [AppController],
   providers: [

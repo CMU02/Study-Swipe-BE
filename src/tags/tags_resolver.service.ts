@@ -1,11 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Pool } from 'pg';
 import OpenAI from 'openai';
-import { resolveHardCanonicalKo, normalizeKey as hardNormalize } from './hardmap';
+import {
+  resolveHardCanonicalKo,
+  normalizeKey as hardNormalize,
+} from './hardmap';
+
+/**
+ * TODO: 프로젝트에 맞게 수정 필요
+ */
 
 // === 임베딩/임계치 ===
 // OpenAI 임베딩 모델명 (기본: text-embedding-3-small, 1536차원)
-const EMB_MODEL = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
+const EMB_MODEL =
+  process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
 // cosine similarity 임계치 (0~1). 이 값 이상이면 "같은 표준 태그"로 판단
 const THRESHOLD = Number(process.env.SIM_THRESHOLD || 0.83);
 
@@ -18,22 +25,13 @@ function toVectorLiteral(vec: number[]): string {
 export type TagResolution = {
   raw: string;
   key: string;
-  canonId: string | null;   // 표준 ID (실제는 canonical_tags.uid)
-  canonical: string;        // 표준 명 (canonical_tags.value)
-  confidence: number;       // similarity
+  canonId: string | null; // 표준 ID (실제는 canonical_tags.uid)
+  canonical: string; // 표준 명 (canonical_tags.value)
+  confidence: number; // similarity
 };
 
 @Injectable()
 export class TagResolverService {
-  private pool = new Pool({
-    host: process.env.PG_HOST,
-    port: Number(process.env.PG_PORT || 5432),
-    database: process.env.PG_DB,
-    user: process.env.PG_USER,
-    password: process.env.PG_PASSWORD,
-    max: 5,
-  });
-
   private openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
   /** 서비스 내부 정규화 (hardmap의 규칙과 동일하게 유지) */
@@ -43,8 +41,11 @@ export class TagResolverService {
 
   /** 임베딩 배치 호출 */
   private async embedBatch(texts: string[]) {
-    const r = await this.openai.embeddings.create({ model: EMB_MODEL, input: texts });
-    return r.data.map(d => d.embedding as unknown as number[]);
+    const r = await this.openai.embeddings.create({
+      model: EMB_MODEL,
+      input: texts,
+    });
+    return r.data.map((d) => d.embedding as unknown as number[]);
   }
 
   /**
@@ -65,7 +66,7 @@ export class TagResolverService {
     if (!rows.length) return;
 
     const inputs = rows.map((r: any) =>
-      [r.value, r.desc].filter(Boolean).join(' / ')
+      [r.value, r.desc].filter(Boolean).join(' / '),
     );
     const embeds = await this.embedBatch(inputs);
 
@@ -113,7 +114,13 @@ export class TagResolverService {
            ON CONFLICT (raw) DO NOTHING`,
           [key, canonUid, 0.99],
         );
-        return { raw, key, canonId: canonUid, canonical: hardCanonValue, confidence: 0.99 };
+        return {
+          raw,
+          key,
+          canonId: canonUid,
+          canonical: hardCanonValue,
+          confidence: 0.99,
+        };
       }
       // 표준 라벨이 DB에 없으면 임베딩 경로로 진행
     }
@@ -165,7 +172,13 @@ export class TagResolverService {
          ON CONFLICT (raw) DO NOTHING`,
         [key, best.uid, sim],
       );
-      return { raw, key, canonId: best.uid, canonical: best.value, confidence: sim };
+      return {
+        raw,
+        key,
+        canonId: best.uid,
+        canonical: best.value,
+        confidence: sim,
+      };
     }
 
     // 임계치 미만 → 원문 유지(또는 '기타' 정책)
@@ -182,7 +195,9 @@ export class TagResolverService {
 
     for (const r of results) {
       // 성공 시 uid 기준, 실패 시 canonical 정규화 키 기준으로 디듑
-      const k = r.canonId ? `canon:${r.canonId}` : `raw:${this.toKey(r.canonical)}`;
+      const k = r.canonId
+        ? `canon:${r.canonId}`
+        : `raw:${this.toKey(r.canonical)}`;
       if (seen.has(k)) continue;
       seen.add(k);
       uniqueCanonical.push(r.canonical);

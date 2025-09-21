@@ -21,9 +21,9 @@ import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
 import { StudyTagsModule } from './study_tags/study_tags.module';
 import { ProficiencyLevelsModule } from './proficiency_levels/proficiency_levels.module';
+import { QuestionsModule } from './questions/questions.modue';
 
 @Module({
-  // Import 해올 Modules
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
@@ -63,6 +63,7 @@ import { ProficiencyLevelsModule } from './proficiency_levels/proficiency_levels
     PreferredMemberCountModule,
     StudyTagsModule,
     ProficiencyLevelsModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [

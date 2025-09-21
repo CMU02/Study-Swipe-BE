@@ -22,18 +22,19 @@ function normalizeModelId(input?: string): string {
 export class QuestionsService {
   private client: OpenAI;
   private model: string;
+  private OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
   constructor() {
-    // env 에서 API_KEY 가져옴.
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
+    if (!this.OPENAI_API_KEY) {
       throw new InternalServerErrorException('.env 내 API KEY 확인');
     }
-    this.client = new OpenAI({ apiKey });
+    this.client = new OpenAI({ apiKey: this.OPENAI_API_KEY });
 
     // 잘못된 기본값(o4-mini) 보정 + OPENAI_CHAT_MODEL도 지원
     this.model = normalizeModelId(
-      process.env.OPENAI_MODEL || process.env.OPENAI_CHAT_MODEL || 'gpt-4o-mini',
+      process.env.OPENAI_MODEL ||
+        process.env.OPENAI_CHAT_MODEL ||
+        'gpt-4o-mini',
     );
   }
 
@@ -72,7 +73,10 @@ export class QuestionsService {
 
     let raw = res.choices?.[0]?.message?.content?.trim() ?? '';
     // ```json … ``` 제거 방어
-    raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+    raw = raw
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/```$/i, '')
+      .trim();
 
     // JSON 파싱 시도
     try {
@@ -87,15 +91,14 @@ export class QuestionsService {
       // Items 정제 (+ 번호/레벨 보정)
       const items: Item[] = itemsIn.map((it) => ({
         tag: String(it.tag ?? ''),
-        questions: (it.questions || [])
-          .slice(0, 3)
-          .map((q, i) => {
-            const level: Level =
-              (['기초', '경험', '응용'] as const).includes((q as any).level as Level)
-                ? ((q as any).level as Level)
-                : lvOrder[Math.min(i, 2)];
-            return { no: seq++, level, text: String((q as any).text ?? '') };
-          }),
+        questions: (it.questions || []).slice(0, 3).map((q, i) => {
+          const level: Level = (['기초', '경험', '응용'] as const).includes(
+            (q as any).level as Level,
+          )
+            ? ((q as any).level as Level)
+            : lvOrder[Math.min(i, 2)];
+          return { no: seq++, level, text: String((q as any).text ?? '') };
+        }),
       }));
 
       return { items };
@@ -105,9 +108,21 @@ export class QuestionsService {
       const items: Item[] = finalTags.map((t) => ({
         tag: t,
         questions: [
-          { no: seq++, level: '기초', text: `${t}의 핵심 개념과 역할을 설명할 수 있다.` },
-          { no: seq++, level: '경험', text: `${t}을(를) 활용해 작은 기능이나 모듈을 직접 구현해 본 경험이 있다.` },
-          { no: seq++, level: '응용', text: `${t}을(를) 사용해 요구사항을 분석하고 적절한 설계를 적용해 문제를 해결한 경험이 있다.` },
+          {
+            no: seq++,
+            level: '기초',
+            text: `${t}의 핵심 개념과 역할을 설명할 수 있다.`,
+          },
+          {
+            no: seq++,
+            level: '경험',
+            text: `${t}을(를) 활용해 작은 기능이나 모듈을 직접 구현해 본 경험이 있다.`,
+          },
+          {
+            no: seq++,
+            level: '응용',
+            text: `${t}을(를) 사용해 요구사항을 분석하고 적절한 설계를 적용해 문제를 해결한 경험이 있다.`,
+          },
         ],
       }));
       return { items };

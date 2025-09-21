@@ -6,14 +6,7 @@ import { ScoreService } from './score.service';
 
 @Module({
   imports: [TagsModule],
-  providers: [
-    QuestionsService,
-    ScoreService,
-    
-  ],
-  controllers: [
-    QuestionsController
-  
-  ],
+  providers: [QuestionsService, ScoreService],
+  controllers: [QuestionsController],
 })
 export class QuestionsModule {}

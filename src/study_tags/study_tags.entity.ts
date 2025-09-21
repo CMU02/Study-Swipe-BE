@@ -22,6 +22,9 @@ export class StudyTags {
   @Column('float')
   proficiency_score: number; // 숙련도 점수
 
+  @Column('float')
+  proficiency_avg_score: number; // 숙련도 평균 점수
+
   @Column('boolean')
   is_survey_completed: boolean; // 설문조사 완료 여부
 

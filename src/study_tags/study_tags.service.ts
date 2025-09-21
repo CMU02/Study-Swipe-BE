@@ -97,7 +97,8 @@ export class StudyTagsService {
         const studyTag = this.studyTagsRepository.create({
           tag_name: tagData.tag_name,
           priority: tagData.priority,
-          proficiency_score: tagData.proficiency_score || 0.0,
+          proficiency_score: tagData.proficiency_score || 0.0, // 기본 0.0
+          proficiency_avg_score: 0.0, // 기본 0.0
           is_survey_completed: false,
           profiles: profile,
           proficiency_levels: null,

@@ -1,6 +1,7 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -32,6 +33,8 @@ export class CanonicalTagsService {
     private tagSynonymsRepository: Repository<TagSynonyms>,
     private vectorService: VectorService,
   ) {}
+
+  private logger = new Logger(CanonicalTagsService.name);
 
   /** 서비스 내부 정규화 (hardmap의 규칙과 동일하게 유지) */
   private toKey(s: string): string {
@@ -87,9 +90,11 @@ export class CanonicalTagsService {
    */
   async resolveOne(raw: string): Promise<TagResolution> {
     const key = this.toKey(raw);
+    this.logger.log(`raw: {${raw}}, key: {${key}}`);
 
     // 1) 하드 매핑 (hardmap이 반환한 표준 라벨은 canonical_tags.value와 일치해야 함)
     const hardCanonValue = resolveHardCanonicalKo(raw);
+    this.logger.log(`hardCanonValue: {${hardCanonValue}}`);
     if (hardCanonValue) {
       const canonicalTag = await this.canonicalTagsRepository.findOne({
         where: { value: hardCanonValue },

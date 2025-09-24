@@ -5,6 +5,8 @@
  *   예: '프론트엔드','백엔드','풀스택','데브옵스','데이터베이스','모바일','인공지능','보안','QA','클라우드'
  */
 
+import { raw } from 'express';
+
 export const normalizeKey = (s: string) =>
   s
     .normalize('NFKC')
@@ -296,7 +298,8 @@ const HARD_SYNONYM_MAP: Record<string, string> = (() => {
  * 하드 매핑 조회 함수
  * - raw 문자열을 받아 정규화 후, 표준 한국어 라벨을 반환 (없으면 null)
  */
-export function resolveHardCanonicalKo(key: string): string | null {
+export function resolveHardCanonicalKo(raw: string): string | null {
+  const key = normalizeKey(raw);
   return HARD_SYNONYM_MAP[key] ?? null;
 }
 

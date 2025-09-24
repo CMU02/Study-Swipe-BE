@@ -21,7 +21,7 @@ import { UniversitiesModule } from './universities/universities.module';
 import { UserModule } from './user/user.module';
 import { StudyTagsModule } from './study_tags/study_tags.module';
 import { ProficiencyLevelsModule } from './proficiency_levels/proficiency_levels.module';
-import { QuestionsModule } from './questions/questions.modue';
+import { QuestionsModule } from './questions/questions.module';
 import { VectorModule } from './vector/vector.module';
 
 @Module({
@@ -38,7 +38,7 @@ import { VectorModule } from './vector/vector.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'study_swipe',
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: true,
     }),
     ThrottlerModule.forRoot({
       throttlers: [

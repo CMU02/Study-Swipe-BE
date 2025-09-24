@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import OpenAI from 'openai';
+import { VectorService } from 'src/vector/vector.service';
 
 export type Level = '기초' | '경험' | '응용';
 export type QuestionOut = { no: number; level: Level; text: string };
@@ -20,23 +21,7 @@ function normalizeModelId(input?: string): string {
 
 @Injectable()
 export class QuestionsService {
-  private client: OpenAI;
-  private model: string;
-  private OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-  constructor() {
-    if (!this.OPENAI_API_KEY) {
-      throw new InternalServerErrorException('.env 내 API KEY 확인');
-    }
-    this.client = new OpenAI({ apiKey: this.OPENAI_API_KEY });
-
-    // 잘못된 기본값(o4-mini) 보정 + OPENAI_CHAT_MODEL도 지원
-    this.model = normalizeModelId(
-      process.env.OPENAI_MODEL ||
-        process.env.OPENAI_CHAT_MODEL ||
-        'gpt-4o-mini',
-    );
-  }
+  constructor(private vectorService: VectorService) {}
 
   // 질문 생성 기능
   // 표준화 및 중복 제거가 끝난 최종 태그로 문항 생성
@@ -62,21 +47,26 @@ export class QuestionsService {
     const user = `태그 목록: ${finalTags.join(', ')}`;
 
     // 응답 생성
-    const res = await this.client.chat.completions.create({
-      model: this.model,
-      temperature: 0.7,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-    });
+    const raw = await this.vectorService.invokeChatModel(system, user);
+    // const res = await this.client.chat.completions.create({
+    //   model: this.model,
+    //   temperature: 0.7,
+    //   messages: [
+    //     { role: 'system', content: system },
+    //     { role: 'user', content: user },
+    //   ],
+    // });
 
-    let raw = res.choices?.[0]?.message?.content?.trim() ?? '';
+    // let raw = res.choices?.[0]?.message?.content?.trim() ?? '';
     // ```json … ``` 제거 방어
-    raw = raw
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/```$/i, '')
-      .trim();
+    // raw = raw
+    //   .replace(/^```(?:json)?\s*/i, '')
+    //   .replace(/```$/i, '')
+    //   .trim();
+
+    if (!raw) {
+      throw new InternalServerErrorException(`OpenAI 응답 없음 : ${raw}`);
+    }
 
     // JSON 파싱 시도
     try {

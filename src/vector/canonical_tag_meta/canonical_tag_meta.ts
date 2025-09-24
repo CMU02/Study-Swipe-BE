@@ -1,4 +1,10 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CanonicalTags } from '../canonical_tags/canonical_tags.entity';
 
 @Entity()
@@ -12,6 +18,6 @@ export class CanonicalTagMeta {
   @Column()
   tag: string;
 
-  @OneToOne(() => CanonicalTags, (tag) => tag.tag_meta)
+  @ManyToOne(() => CanonicalTags, (tag) => tag.tag_meta)
   canonical_tags: CanonicalTags;
 }

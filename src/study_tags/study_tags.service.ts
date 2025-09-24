@@ -4,6 +4,7 @@ import { StudyTags } from './study_tags.entity';
 import { Repository } from 'typeorm';
 import { ProficiencyLevelsService } from 'src/proficiency_levels/proficiency_levels.service';
 import { Profiles } from 'src/profiles/profiles.entity';
+import { CanonicalTagsService } from 'src/vector/canonical_tags/canonical_tags.service';
 
 /**
  * 공부 태그 관련 비즈니스 로직을 처리하는 서비스
@@ -15,6 +16,7 @@ export class StudyTagsService {
     @InjectRepository(StudyTags)
     private studyTagsRepository: Repository<StudyTags>,
     private proficiencyLevelsService: ProficiencyLevelsService,
+    private canonicalTagService: CanonicalTagsService,
   ) {}
 
   /**
@@ -88,6 +90,8 @@ export class StudyTagsService {
         existingTag.tag_name = tagData.tag_name;
 
         const updatedTag = await this.studyTagsRepository.save(existingTag);
+
+        await this.canonicalTagService.resolveOne(updatedTag.tag_name);
         upsertedTags.push(updatedTag);
 
         // 처리된 태그는 맵에서 제거

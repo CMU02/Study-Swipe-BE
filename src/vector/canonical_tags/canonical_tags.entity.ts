@@ -3,10 +3,11 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { CanonicalTagMeta } from '../canonical_tag_meta/canonical_tag_meta';
+import { TagSynonyms } from '../tag_synonyms/tag_synonyms.entity';
 
 @Entity()
 export class CanonicalTags {
@@ -16,16 +17,19 @@ export class CanonicalTags {
   @Column('text', { nullable: false })
   value: string; // 표시/기준 이름 (예 : '프론트엔드', '백엔드', 'React', 'NestJS')
 
-  @Column('text')
+  @Column('text', { nullable: true })
   description: string;
 
-  @Column({ type: 'real_vector', length: 1536 })
+  @Column('vector')
   embed: number[] | Buffer;
 
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToOne(() => CanonicalTagMeta, (meta) => meta.canonical_tags)
+  @OneToMany(() => CanonicalTagMeta, (meta) => meta.canonical_tags)
   @JoinColumn()
   tag_meta: CanonicalTagMeta;
+
+  @OneToMany(() => TagSynonyms, (tag_synonyms) => tag_synonyms.canonical_tags)
+  tag_synonyms: TagSynonyms;
 }

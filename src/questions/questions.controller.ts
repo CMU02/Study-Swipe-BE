@@ -1,15 +1,19 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
 import { Item, QuestionsService } from './questions.service';
-import { TagResolverService } from '../tags/tags_resolver.service';
 import { Level, ScoreResponse, ScoreService } from './score.service';
+import { CanonicalTagsService } from 'src/vector/canonical_tags/canonical_tags.service';
 
 const normalizeKey = (s: string) =>
-  s.normalize('NFKC').trim().toLowerCase().replace(/[\s\-\_\/]/g, '');
+  s
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s\-\_\/]/g, '');
 
 type InComingAnswerBlock = {
   tag: string;
-  questions: Array<{ no: number; level: Level; value: number}>;
-}
+  questions: Array<{ no: number; level: Level; value: number }>;
+};
 
 // GPT 관련은 웬만해서는 ai 로 통일
 
@@ -17,14 +21,12 @@ type InComingAnswerBlock = {
 export class QuestionsController {
   constructor(
     private readonly qs: QuestionsService,
-    private readonly tags: TagResolverService,
+    private readonly tags: CanonicalTagsService,
     private readonly scorer: ScoreService,
-
   ) {}
 
   @Post('make-questions')
   async makeQuestions(@Body() body: { tags?: string[] }) {
-
     // 입력 검증
     const raw = (body?.tags ?? []).map((s) => String(s).trim()).filter(Boolean);
 
@@ -44,17 +46,24 @@ export class QuestionsController {
     const groups = new Map<string, Group>();
 
     for (const m of resolved.mappings) {
-      const key = m.canonId ? `canon:${m.canonId}` : `raw:${normalizeKey(m.canonical)}`;
+      const key = m.canonId
+        ? `canon:${m.canonId}`
+        : `raw:${normalizeKey(m.canonical)}`;
       const g = groups.get(key) ?? { canonical: m.canonical, raws: [] };
       g.raws.push(m.raw);
       groups.set(key, g);
     }
 
-    const duplicates = Array.from(groups.values()).filter((g) => g.raws.length > 1);
+    const duplicates = Array.from(groups.values()).filter(
+      (g) => g.raws.length > 1,
+    );
     if (duplicates.length > 0) {
       throw new BadRequestException({
         message: '중복된 태그가 있습니다. 제거해주세요.',
-        duplicates: duplicates.map((d) => ({ canonical: d.canonical, raws: d.raws })),
+        duplicates: duplicates.map((d) => ({
+          canonical: d.canonical,
+          raws: d.raws,
+        })),
       });
     }
 
@@ -64,15 +73,18 @@ export class QuestionsController {
   }
 
   @Post('score')
-    async scoreByBlocks(
-      @Body()
-      body: { answers?: InComingAnswerBlock[] },
-    ): Promise<ScoreResponse> {
-      const blocks = body?.answers ?? [];
-      if (!Array.isArray(blocks) || blocks.length === 0) {
-        throw new BadRequestException('answers 배열(태그별 블록)을 제공해주세요.');
-      }
-      return this.scorer.scoreFromBlocks(blocks);
+  async scoreByBlocks(
+    @Body()
+    body: {
+      answers?: InComingAnswerBlock[];
+    },
+  ): Promise<ScoreResponse> {
+    const blocks = body?.answers ?? [];
+    if (!Array.isArray(blocks) || blocks.length === 0) {
+      throw new BadRequestException(
+        'answers 배열(태그별 블록)을 제공해주세요.',
+      );
     }
+    return this.scorer.scoreFromBlocks(blocks);
+  }
 }
-

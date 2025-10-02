@@ -38,7 +38,7 @@ import { VectorModule } from './vector/vector.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'study_swipe',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
     }),
     ThrottlerModule.forRoot({
       throttlers: [

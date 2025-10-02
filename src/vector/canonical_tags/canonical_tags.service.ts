@@ -2,15 +2,14 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CanonicalTags } from './canonical_tags.entity';
 import { IsNull, Repository } from 'typeorm';
-import { VectorService } from '../vector.service';
 import { normalizeKey, resolveHardCanonicalKo } from '../hardmap';
-import { TagSynonymsService } from '../tag_synonyms/tag_synonyms.service';
 import { TagSynonyms } from '../tag_synonyms/tag_synonyms.entity';
+import { VectorService } from '../vector.service';
+import { CanonicalTags } from './canonical_tags.entity';
+import { CategorySystemPrompt } from './category_system_prompt';
 
 // 매핑 상세 타입
 export type TagResolution = {
@@ -41,6 +40,33 @@ export class CanonicalTagsService {
     return normalizeKey(s);
   }
 
+  async insertCanonTagsEmbeddings(tag: string) {
+    const embed = await this.vectorService.invokeEmbedding(tag);
+    const categoryResponse = await this.vectorService.invokeChatModel(
+      CategorySystemPrompt,
+      tag,
+    );
+
+    // JSON 응답에서 category 값만 추출
+    let categoryValue = tag; // 기본값으로 원본 태그 사용
+    try {
+      if (categoryResponse) {
+        const parsed = JSON.parse(categoryResponse);
+        categoryValue = parsed.category || tag;
+      }
+    } catch (error) {
+      this.logger.warn(`JSON 파싱 실패: ${categoryResponse}, 원본 태그 사용`);
+    }
+
+    const newCanonicalTags = this.canonicalTagsRepository.create({
+      tag_name: tag,
+      embed: embed as number[],
+      category: categoryValue,
+    });
+
+    await this.canonicalTagsRepository.save(newCanonicalTags);
+  }
+
   /**
    * canonical_tags.embed 가 NULL인 항목들 지연 임베딩
    */
@@ -54,9 +80,7 @@ export class CanonicalTagsService {
     if (!rows.length) return;
 
     // 2. 임베딩에 넣을 문자열 준비 (value + description)
-    const texts = rows.map((row) =>
-      [row.value, row.description].filter(Boolean).join(' / '),
-    );
+    const texts = rows.map((row) => [row.tag_name].filter(Boolean).join(' / '));
 
     // 3. OpenAI 임베딩 호출
     const embeds = await this.vectorService.invokeEmbeddingBatch(texts);
@@ -97,7 +121,7 @@ export class CanonicalTagsService {
     this.logger.log(`hardCanonValue: {${hardCanonValue}}`);
     if (hardCanonValue) {
       const canonicalTag = await this.canonicalTagsRepository.findOne({
-        where: { value: hardCanonValue },
+        where: { tag_name: hardCanonValue },
       });
 
       if (canonicalTag) {
@@ -136,7 +160,7 @@ export class CanonicalTagsService {
         raw,
         key,
         canonId: cachedSynonym.canonical_tags.uid,
-        canonical: cachedSynonym.canonical_tags.value,
+        canonical: cachedSynonym.canonical_tags.tag_name,
         confidence: cachedSynonym.confidence,
       };
     }

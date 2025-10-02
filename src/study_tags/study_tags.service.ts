@@ -91,7 +91,10 @@ export class StudyTagsService {
 
         const updatedTag = await this.studyTagsRepository.save(existingTag);
 
-        await this.canonicalTagService.resolveOne(updatedTag.tag_name);
+        // await this.canonicalTagService.resolveOne(updatedTag.tag_name);
+        await this.canonicalTagService.insertCanonTagsEmbeddings(
+          updatedTag.tag_name,
+        );
         upsertedTags.push(updatedTag);
 
         // 처리된 태그는 맵에서 제거

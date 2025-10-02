@@ -8,6 +8,15 @@ export class VectorService {
     apiKey: process.env.OPENAI_API_KEY,
   });
 
+  async invokeEmbedding(text: string) {
+    const result = await this.openai.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: text,
+    });
+
+    return result.data[0].embedding;
+  }
+
   async invokeEmbeddingBatch(texts: string[]) {
     const results = await this.openai.embeddings.create({
       model: 'text-embedding-3-small',

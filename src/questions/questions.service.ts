@@ -8,17 +8,6 @@ export type Item = { tag: string; questions: QuestionOut[] };
 
 export type MakeQuestionsResult = { items: Item[] };
 
-/** 모델 id 보정: 잘못된 값(o4-mini 등)을 유효한 id로 변환 */
-function normalizeModelId(input?: string): string {
-  const v = (input || '').trim();
-  if (!v) return 'gpt-4o-mini';
-  const l = v.toLowerCase();
-  if (l === '4o') return 'gpt-4o';
-  if (l === 'o4-mini' || l === 'gpt4o-mini') return 'gpt-4o-mini';
-  if (l === 'gpt4o') return 'gpt-4o';
-  return v;
-}
-
 @Injectable()
 export class QuestionsService {
   constructor(private vectorService: VectorService) {}
@@ -48,21 +37,6 @@ export class QuestionsService {
 
     // 응답 생성
     const raw = await this.vectorService.invokeChatModel(system, user);
-    // const res = await this.client.chat.completions.create({
-    //   model: this.model,
-    //   temperature: 0.7,
-    //   messages: [
-    //     { role: 'system', content: system },
-    //     { role: 'user', content: user },
-    //   ],
-    // });
-
-    // let raw = res.choices?.[0]?.message?.content?.trim() ?? '';
-    // ```json … ``` 제거 방어
-    // raw = raw
-    //   .replace(/^```(?:json)?\s*/i, '')
-    //   .replace(/```$/i, '')
-    //   .trim();
 
     if (!raw) {
       throw new InternalServerErrorException(`OpenAI 응답 없음 : ${raw}`);

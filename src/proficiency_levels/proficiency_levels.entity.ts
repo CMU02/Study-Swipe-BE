@@ -11,9 +11,9 @@ export class ProficiencyLevels {
    */
   @Column()
   level_name: string; // 레벨이름 (초급, 중급, 상급)
-  @Column('int')
+  @Column({ type: 'float8' })
   min_score: number; // 해당 레벨이 되기 위한 최소점수
-  @Column('int')
+  @Column({ type: 'float8' })
   max_score: number; // 해당 레벨이 되기 위한 최대점수
 
   @OneToMany(() => StudyTags, (study_tags) => study_tags.proficiency_levels)

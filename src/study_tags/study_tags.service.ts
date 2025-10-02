@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudyTags } from './study_tags.entity';
 import { Repository } from 'typeorm';
@@ -18,6 +18,8 @@ export class StudyTagsService {
     private proficiencyLevelsService: ProficiencyLevelsService,
     private canonicalTagService: CanonicalTagsService,
   ) {}
+
+  private logger = new Logger(StudyTagsService.name);
 
   /**
    * 프로필 ID로 공부 태그 목록을 조회합니다.
@@ -169,5 +171,54 @@ export class StudyTagsService {
 
     studyTag.proficiency_score = proficiencyScore;
     return this.studyTagsRepository.save(studyTag);
+  }
+
+  /**
+   * 설문조사 완료 후 태그별 점수를 업데이트합니다.
+   * @param profileId 프로필 ID
+   * @param tagScores 태그별 점수 데이터
+   * @returns 업데이트된 공부 태그 목록
+   */
+  async updateTagScoresAfterSurvey(
+    profileId: number,
+    tagScores: Array<{
+      tag: string;
+      sum: number;
+      wavg: number;
+    }>,
+  ): Promise<StudyTags[]> {
+    const updatedTags: StudyTags[] = [];
+
+    for (const scoreData of tagScores) {
+      // 해당 프로필과 태그명으로 StudyTag 찾기
+      const studyTag = await this.studyTagsRepository.findOne({
+        where: {
+          profiles: { id: profileId },
+          tag_name: scoreData.tag,
+        },
+        relations: ['profiles'],
+      });
+
+      if (!studyTag) {
+        throw new BadRequestException(
+          `태그 "${scoreData.tag}"에 해당하는 공부 태그를 찾을 수 없습니다.`,
+        );
+      }
+
+      // wavg 점수를 기반으로 proficiency_level 찾기
+      const proficiencyLevel =
+        await this.proficiencyLevelsService.findLevelVyScore(scoreData.sum);
+
+      // 점수 및 상태 업데이트
+      studyTag.proficiency_score = scoreData.sum;
+      studyTag.proficiency_avg_score = scoreData.wavg;
+      studyTag.proficiency_levels = proficiencyLevel;
+      studyTag.is_survey_completed = true;
+
+      const updatedTag = await this.studyTagsRepository.save(studyTag);
+      updatedTags.push(updatedTag);
+    }
+
+    return updatedTags;
   }
 }

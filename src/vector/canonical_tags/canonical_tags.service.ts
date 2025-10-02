@@ -16,7 +16,7 @@ export type TagResolution = {
   raw: string;
   key: string;
   canonId: string | null; // 표준 ID (실제는 canonical_tags.uid)
-  canonical: string; // 표준 명 (canonical_tags.value)
+  canonical: string; // 표준 명 (canonical_tags.tag_name)
   confidence: number; // similarity
 };
 
@@ -40,6 +40,9 @@ export class CanonicalTagsService {
     return normalizeKey(s);
   }
 
+  /**
+   * 새로운 canonical tag 생성 (임베딩 + 카테고리 분류 포함)
+   */
   async insertCanonTagsEmbeddings(tag: string) {
     const embed = await this.vectorService.invokeEmbedding(tag);
     const categoryResponse = await this.vectorService.invokeChatModel(
@@ -58,6 +61,8 @@ export class CanonicalTagsService {
       this.logger.warn(`JSON 파싱 실패: ${categoryResponse}, 원본 태그 사용`);
     }
 
+    this.logger.log(`추출된 category 값: ${categoryValue}`);
+
     const newCanonicalTags = this.canonicalTagsRepository.create({
       tag_name: tag,
       embed: embed as number[],
@@ -69,43 +74,77 @@ export class CanonicalTagsService {
 
   /**
    * canonical_tags.embed 가 NULL인 항목들 지연 임베딩
+   * 성능 최적화: 배치 처리 및 트랜잭션 사용
    */
   async ensureCanonEmbeddings(batch = 50) {
-    // 1. 임베딩이 없는 canonical_tags 가져오기
-    const rows = await this.canonicalTagsRepository.find({
-      where: { embed: IsNull() },
-      take: batch,
-    });
+    // 1. 임베딩이 없는 canonical_tags 가져오기 (필요한 필드만 선택)
+    const rows = await this.canonicalTagsRepository
+      .createQueryBuilder('ct')
+      .select(['ct.uid', 'ct.tag_name', 'ct.category'])
+      .where('ct.embed IS NULL')
+      .limit(batch)
+      .getMany();
 
     if (!rows.length) return;
 
-    // 2. 임베딩에 넣을 문자열 준비 (value + description)
-    const texts = rows.map((row) => [row.tag_name].filter(Boolean).join(' / '));
+    // 2. 임베딩에 넣을 문자열 준비 (tag_name + category)
+    const texts = rows.map((row) =>
+      [row.tag_name, row.category].filter(Boolean).join(' / '),
+    );
 
-    // 3. OpenAI 임베딩 호출
+    // 3. OpenAI 임베딩 배치 호출
     const embeds = await this.vectorService.invokeEmbeddingBatch(texts);
 
-    // 갯수 불일치 방지
     if (embeds.length !== rows.length) {
       throw new InternalServerErrorException(
         `임베딩 카운트와 갯수가 일치하지 않습니다 : embeds=${embeds.length}, rows=${rows.length}`,
       );
     }
 
-    // 4. 각 row에 해당 백터만 할당 (number[])
-    rows.forEach((row, i) => {
-      const vector = embeds[i];
-      row.embed = Array.isArray(vector)
-        ? vector
-        : Array.from(vector as ArrayLike<number>);
-    });
+    // 4. 트랜잭션으로 일괄 업데이트 (성능 최적화)
+    await this.canonicalTagsRepository.manager.transaction(async (manager) => {
+      const updatePromises = rows.map((row, i) => {
+        const vector = Array.isArray(embeds[i])
+          ? embeds[i]
+          : Array.from(embeds[i] as ArrayLike<number>);
 
-    // 5. 일괄 저장
-    await this.canonicalTagsRepository.save(rows);
+        return manager.update(CanonicalTags, row.uid, { embed: vector });
+      });
+
+      await Promise.all(updatePromises);
+    });
   }
 
   /**
-   * 단일 태그 매핑 순서
+   * 비동기 동의어 저장 (성능 최적화용)
+   */
+  private async saveSynonymAsync(
+    raw: string,
+    canonicalTag: { uid: string; tag_name: string },
+    confidence: number,
+  ): Promise<void> {
+    try {
+      await this.tagSynonymsRepository
+        .createQueryBuilder()
+        .insert()
+        .into(TagSynonyms)
+        .values({
+          raw,
+          canonical_tags: { uid: canonicalTag.uid } as any,
+          confidence,
+        })
+        .orIgnore()
+        .execute();
+    } catch (error) {
+      this.logger.warn(
+        `동의어 저장 실패: ${raw} -> ${canonicalTag.tag_name}`,
+        error,
+      );
+    }
+  }
+
+  /**
+   * 단일 태그 매핑 순서 (현재 구조에 맞게 수정 + 성능 최적화)
    * 1) 하드매핑(있으면 즉시 확정 + 캐시 적재)
    * 2) 캐시(tag_synonyms) 조회
    * 3) 지연 임베딩 보장
@@ -114,45 +153,37 @@ export class CanonicalTagsService {
    */
   async resolveOne(raw: string): Promise<TagResolution> {
     const key = this.toKey(raw);
-    this.logger.log(`raw: {${raw}}, key: {${key}}`);
+    this.logger.debug(`resolving tag - raw: ${raw}, key: ${key}`);
 
-    // 1) 하드 매핑 (hardmap이 반환한 표준 라벨은 canonical_tags.value와 일치해야 함)
+    // 1) 하드 매핑 확인
     const hardCanonValue = resolveHardCanonicalKo(raw);
-    this.logger.log(`hardCanonValue: {${hardCanonValue}}`);
     if (hardCanonValue) {
       const canonicalTag = await this.canonicalTagsRepository.findOne({
         where: { tag_name: hardCanonValue },
+        select: ['uid', 'tag_name'], // 필요한 필드만 선택
       });
 
       if (canonicalTag) {
-        // 캐시에 저장 (중복 방지)
-        await this.tagSynonymsRepository
-          .createQueryBuilder()
-          .insert()
-          .into(TagSynonyms)
-          .values({
-            raw: key,
-            canonical_tags: canonicalTag,
-            confidence: 0.99,
-          })
-          .orIgnore()
-          .execute();
+        // 비동기 캐시 저장 (응답 속도 향상)
+        this.saveSynonymAsync(key, canonicalTag, 0.99);
 
         return {
           raw,
           key,
           canonId: canonicalTag.uid,
-          canonical: hardCanonValue,
+          canonical: canonicalTag.tag_name,
           confidence: 0.99,
         };
       }
-      // 표준 라벨이 DB에 없으면 임베딩 경로로 진행
     }
 
-    // 2) 캐시 조회(tag_synonyms.raw = key)
+    // 2) 캐시 조회 (필요한 필드만 선택)
     const cachedSynonym = await this.tagSynonymsRepository.findOne({
       where: { raw: key },
-      relations: ['canonical_tags'],
+      select: ['confidence'],
+      relations: {
+        canonical_tags: true,
+      },
     });
 
     if (cachedSynonym) {
@@ -168,14 +199,12 @@ export class CanonicalTagsService {
     // 3) 지연 임베딩 보장
     await this.ensureCanonEmbeddings(50);
 
-    // 4) 임베딩 Top-1 검색
+    // 4) 임베딩 검색 (단일 쿼리로 최적화)
     const [qvec] = await this.vectorService.invokeEmbeddingBatch([raw]);
 
-    // PostgreSQL의 cosine distance 연산자 <=> 사용
-    // 1 - (embed <=> query_vector) = cosine similarity
     const result = await this.canonicalTagsRepository
       .createQueryBuilder('ct')
-      .select(['ct.uid', 'ct.value'])
+      .select(['ct.uid', 'ct.tag_name'])
       .addSelect('1 - (ct.embed <=> :queryVector)', 'similarity')
       .where('ct.embed IS NOT NULL')
       .setParameter('queryVector', `[${qvec.join(',')}]`)
@@ -190,30 +219,15 @@ export class CanonicalTagsService {
     const similarity = Number(result.similarity);
 
     if (similarity >= THRESHOLD) {
-      // 5) 캐시 적재
-      const canonicalTag = await this.canonicalTagsRepository.findOne({
-        where: { uid: result.ct_uid },
-      });
-
-      if (canonicalTag) {
-        await this.tagSynonymsRepository
-          .createQueryBuilder()
-          .insert()
-          .into(TagSynonyms)
-          .values({
-            raw: key,
-            canonical_tags: canonicalTag,
-            confidence: similarity,
-          })
-          .orIgnore()
-          .execute();
-      }
+      // 5) 비동기 캐시 적재 (응답 속도 향상)
+      const canonicalTag = { uid: result.ct_uid, tag_name: result.ct_tag_name };
+      this.saveSynonymAsync(key, canonicalTag, similarity);
 
       return {
         raw,
         key,
         canonId: result.ct_uid,
-        canonical: result.ct_value,
+        canonical: result.ct_tag_name,
         confidence: similarity,
       };
     }
@@ -222,12 +236,15 @@ export class CanonicalTagsService {
     return { raw, key, canonId: null, canonical: raw, confidence: similarity };
   }
 
-  /** 여러 개 입력 → 디듑(중복 제거) 포함 결과 */
+  /**
+   * 여러 개 입력 → 디듑(중복 제거) 포함 결과 (성능 최적화)
+   * 병렬 처리로 성능 향상
+   */
   async resolveManyDetailed(rawTags: string[]) {
-    const results: TagResolution[] = [];
-    for (const t of rawTags) {
-      results.push(await this.resolveOne(t));
-    }
+    // 병렬 처리로 성능 향상
+    const results = await Promise.all(
+      rawTags.map((tag) => this.resolveOne(tag)),
+    );
 
     const seen = new Set<string>();
     const uniqueCanonical: string[] = [];
@@ -243,5 +260,25 @@ export class CanonicalTagsService {
     }
 
     return { uniqueCanonical, mappings: results };
+  }
+
+  /**
+   * 특정 태그명으로 canonical tag 조회
+   */
+  async findByTagName(tagName: string): Promise<CanonicalTags | null> {
+    return this.canonicalTagsRepository.findOne({
+      where: { tag_name: tagName },
+    });
+  }
+
+  /**
+   * 모든 canonical tags 조회 (페이지네이션)
+   */
+  async findAll(page = 1, limit = 20): Promise<CanonicalTags[]> {
+    return this.canonicalTagsRepository.find({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { created_at: 'DESC' },
+    });
   }
 }

@@ -22,6 +22,8 @@ import { UserModule } from './user/user.module';
 import { StudyTagsModule } from './study_tags/study_tags.module';
 import { QuestionsModule } from './questions/questions.module';
 import { VectorModule } from './vector/vector.module';
+import { MatchingModule } from './matching/matching.module';
+import { SeedsModule } from './database/seeds/seeds.module';
 
 @Module({
   imports: [
@@ -64,6 +66,8 @@ import { VectorModule } from './vector/vector.module';
     StudyTagsModule,
     QuestionsModule,
     VectorModule,
+    MatchingModule,
+    SeedsModule,
   ],
   controllers: [AppController],
   providers: [

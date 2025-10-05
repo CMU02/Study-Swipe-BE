@@ -60,9 +60,6 @@ export class CanonicalTagsService {
     } catch (error) {
       this.logger.warn(`JSON 파싱 실패: ${categoryResponse}, 원본 태그 사용`);
     }
-
-    this.logger.log(`추출된 category 값: ${categoryValue}`);
-
     const newCanonicalTags = this.canonicalTagsRepository.create({
       tag_name: tag,
       embed: embed as number[],

@@ -14,6 +14,7 @@ import { CompleteSurveyDto } from './dto/complete_survey.dto';
 import { StudyTagsService } from 'src/study_tags/study_tags.service';
 import { AuthGuard } from 'src/auth/authGuard';
 import { ProfilesService } from 'src/profiles/profiles.service';
+import { zip } from 'rxjs/operators';
 
 type InComingAnswerBlock = {
   tag: string;
@@ -88,10 +89,11 @@ export class QuestionsController {
     const scoreResult = this.scorer.scoreFromBlocks(answers);
 
     // 3. 태그별 점수 데이터 추출
-    const tagScores = scoreResult.perTag.map((tagResult) => ({
-      tag: tagResult.tag,
-      sum: tagResult.sum,
-      wavg: tagResult.wavg,
+    const tagScores = scoreResult.perTag.map(({ sum, wavg, grade, tag }) => ({
+      tag,
+      sum,
+      wavg,
+      grade,
     }));
 
     // 4. StudyTags 테이블 업데이트
@@ -108,7 +110,7 @@ export class QuestionsController {
         tag_name: tag.tag_name,
         proficiency_score: tag.proficiency_score,
         proficiency_avg_score: tag.proficiency_avg_score,
-        proficiency_level: tag.proficiency_levels?.level_name || null,
+        proficiency_level: tag.proficiency_levels,
         is_survey_completed: tag.is_survey_completed,
       })),
     };

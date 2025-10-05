@@ -28,12 +28,8 @@ export class StudyTags {
   @Column('boolean')
   is_survey_completed: boolean; // 설문조사 완료 여부
 
-  @ManyToOne(
-    () => ProficiencyLevels,
-    (proficiency_level) => proficiency_level.study_tags,
-  )
-  @JoinColumn({ name: 'proficiency_levels_id' })
-  proficiency_levels: ProficiencyLevels | null;
+  @Column()
+  proficiency_levels: string; // 숙련도 이름
 
   @ManyToOne(() => Profiles, (profiles) => profiles.study_tags)
   @JoinColumn({ name: 'profiles_id' })

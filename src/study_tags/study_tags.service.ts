@@ -110,7 +110,7 @@ export class StudyTagsService {
           proficiency_avg_score: 0.0, // 기본 0.0
           is_survey_completed: false,
           profiles: profile,
-          proficiency_levels: null,
+          proficiency_levels: '',
         });
 
         const savedTag = await this.studyTagsRepository.save(studyTag);
@@ -185,6 +185,7 @@ export class StudyTagsService {
       tag: string;
       sum: number;
       wavg: number;
+      grade: string;
     }>,
   ): Promise<StudyTags[]> {
     const updatedTags: StudyTags[] = [];
@@ -205,14 +206,10 @@ export class StudyTagsService {
         );
       }
 
-      // wavg 점수를 기반으로 proficiency_level 찾기
-      const proficiencyLevel =
-        await this.proficiencyLevelsService.findLevelVyScore(scoreData.sum);
-
       // 점수 및 상태 업데이트
       studyTag.proficiency_score = scoreData.sum;
       studyTag.proficiency_avg_score = scoreData.wavg;
-      studyTag.proficiency_levels = proficiencyLevel;
+      studyTag.proficiency_levels = scoreData.grade;
       studyTag.is_survey_completed = true;
 
       const updatedTag = await this.studyTagsRepository.save(studyTag);

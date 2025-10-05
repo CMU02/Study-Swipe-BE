@@ -1,14 +1,20 @@
 import { User } from 'src/user/user.entity';
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Universities {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   university_name: string;
 
   @OneToMany(() => User, (user) => user.universities)
-  users: User;
+  users: User[];
 }

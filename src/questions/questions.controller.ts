@@ -6,15 +6,13 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { Item, QuestionsService } from './questions.service';
+import { QuestionsService } from './questions.service';
 import { Level, ScoreResponse, ScoreService } from './score.service';
-import { CanonicalTagsService } from 'src/vector/canonical_tags/canonical_tags.service';
 import { MakeQuestionsDTO } from './dto/make_question.dto';
 import { CompleteSurveyDto } from './dto/complete_survey.dto';
 import { StudyTagsService } from 'src/study_tags/study_tags.service';
 import { AuthGuard } from 'src/auth/authGuard';
 import { ProfilesService } from 'src/profiles/profiles.service';
-import { zip } from 'rxjs/operators';
 
 type InComingAnswerBlock = {
   tag: string;
@@ -27,7 +25,6 @@ type InComingAnswerBlock = {
 export class QuestionsController {
   constructor(
     private readonly qs: QuestionsService,
-    private readonly tags: CanonicalTagsService,
     private readonly scorer: ScoreService,
     private readonly studyTagsService: StudyTagsService,
     private readonly profilesService: ProfilesService,
@@ -96,23 +93,30 @@ export class QuestionsController {
       grade,
     }));
 
-    // 4. StudyTags 테이블 업데이트
-    const updatedTags = await this.studyTagsService.updateTagScoresAfterSurvey(
+    // 4. StudyTags 테이블과 User 테이블 모두 업데이트 (새로운 통합 메서드 사용)
+    const updateResult = await this.studyTagsService.updateScoresAfterSurvey(
+      userUuid,
       profile.id,
       tagScores,
+      scoreResult.overall.wavg,
     );
 
     return {
       message: '설문조사가 완료되었습니다.',
       scoreResult,
-      updatedTags: updatedTags.map((tag) => ({
+      updatedTags: updateResult.updatedTags.map((tag) => ({
         id: tag.id,
         tag_name: tag.tag_name,
         proficiency_score: tag.proficiency_score,
         proficiency_avg_score: tag.proficiency_avg_score,
+        proficiency_weight_avg_score: tag.proficiency_weight_avg_score,
         proficiency_level: tag.proficiency_levels,
         is_survey_completed: tag.is_survey_completed,
       })),
+      updatedUser: {
+        uuid: updateResult.updatedUser.uuid,
+        weight_avg_score: updateResult.updatedUser.weight_avg_score,
+      },
     };
   }
 }

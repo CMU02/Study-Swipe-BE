@@ -1,10 +1,14 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StudyTags } from './study_tags.entity';
-import { Repository } from 'typeorm';
-import { ProficiencyLevelsService } from 'src/proficiency_levels/proficiency_levels.service';
 import { Profiles } from 'src/profiles/profiles.entity';
+import { User } from 'src/user/user.entity';
 import { CanonicalTagsService } from 'src/vector/canonical_tags/canonical_tags.service';
+import { Repository } from 'typeorm';
+import { StudyTags } from './study_tags.entity';
 
 /**
  * 공부 태그 관련 비즈니스 로직을 처리하는 서비스
@@ -15,11 +19,10 @@ export class StudyTagsService {
   constructor(
     @InjectRepository(StudyTags)
     private studyTagsRepository: Repository<StudyTags>,
-    private proficiencyLevelsService: ProficiencyLevelsService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     private canonicalTagService: CanonicalTagsService,
   ) {}
-
-  private logger = new Logger(StudyTagsService.name);
 
   /**
    * 프로필 ID로 공부 태그 목록을 조회합니다.
@@ -29,7 +32,7 @@ export class StudyTagsService {
   async findStudyTagsByProfileId(profileId: number): Promise<StudyTags[]> {
     return this.studyTagsRepository.find({
       where: { profiles: { id: profileId } },
-      relations: ['profiles', 'proficiency_levels'],
+      relations: ['profiles'],
       order: { priority: 'ASC' },
     });
   }
@@ -208,7 +211,8 @@ export class StudyTagsService {
 
       // 점수 및 상태 업데이트
       studyTag.proficiency_score = scoreData.sum;
-      studyTag.proficiency_avg_score = scoreData.wavg;
+      studyTag.proficiency_avg_score = scoreData.sum / 3;
+      studyTag.proficiency_weight_avg_score = scoreData.wavg;
       studyTag.proficiency_levels = scoreData.grade;
       studyTag.is_survey_completed = true;
 
@@ -217,5 +221,71 @@ export class StudyTagsService {
     }
 
     return updatedTags;
+  }
+
+  /**
+   * 설문조사 완료 후 사용자의 전체 가중 평균 점수를 업데이트합니다.
+   * @param userId 사용자 UUID
+   * @param overallWavg 전체 가중 평균 점수 (overall.wavg)
+   * @returns 업데이트된 사용자 정보
+   * @throws NotFoundException 사용자를 찾을 수 없는 경우
+   */
+  async updateUserWeightAvgScore(
+    userId: string,
+    overallWavg: number,
+  ): Promise<User> {
+    // 사용자 존재 여부 확인
+    const user = await this.userRepository.findOne({
+      where: { uuid: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 가중 평균 점수 업데이트
+    user.weight_avg_score = overallWavg;
+
+    return this.userRepository.save(user);
+  }
+
+  /**
+   * 설문조사 완료 후 태그별 점수와 사용자 전체 점수를 모두 업데이트합니다.
+   * @param userId 사용자 UUID
+   * @param profileId 프로필 ID
+   * @param tagScores 태그별 점수 데이터
+   * @param overallWavg 전체 가중 평균 점수
+   * @returns 업데이트 결과 객체
+   */
+  async updateScoresAfterSurvey(
+    userId: string,
+    profileId: number,
+    tagScores: Array<{
+      tag: string;
+      sum: number;
+      wavg: number;
+      grade: string;
+    }>,
+    overallWavg: number,
+  ): Promise<{
+    updatedTags: StudyTags[];
+    updatedUser: User;
+  }> {
+    // 태그별 점수 업데이트
+    const updatedTags = await this.updateTagScoresAfterSurvey(
+      profileId,
+      tagScores,
+    );
+
+    // 사용자 전체 가중 평균 점수 업데이트
+    const updatedUser = await this.updateUserWeightAvgScore(
+      userId,
+      overallWavg,
+    );
+
+    return {
+      updatedTags,
+      updatedUser,
+    };
   }
 }

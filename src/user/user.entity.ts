@@ -28,9 +28,9 @@ export class User {
   @Column()
   password: string;
 
-  // 가중치 점수
+  // 가중치 평균점수
   @Column({ type: 'float', nullable: true })
-  weight_score: number;
+  weight_avg_score: number;
 
   // 이메일 인증/미인증 여부 기본(미인증)
   @Column({ default: false })

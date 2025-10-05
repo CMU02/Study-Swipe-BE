@@ -1,4 +1,3 @@
-import { ProficiencyLevels } from 'src/proficiency_levels/proficiency_levels.entity';
 import { Profiles } from 'src/profiles/profiles.entity';
 import {
   Column,
@@ -24,6 +23,9 @@ export class StudyTags {
 
   @Column('float')
   proficiency_avg_score: number; // 숙련도 평균 점수
+
+  @Column('float', { nullable: true })
+  proficiency_weight_avg_score: number; // 숙련도 가중치 평균 점수
 
   @Column('boolean')
   is_survey_completed: boolean; // 설문조사 완료 여부

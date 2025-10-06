@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Patch,
   Post,
   Request,
   UseGuards,
@@ -21,8 +20,8 @@ import { ProfilePreferredMemberCountDto } from './dto/profile_preferred_member_c
 import { ProfileRegionsDto } from './dto/profile_regions.dto';
 import { ProfileSocialPrefDto } from './dto/profile_social_pref.dto';
 import { ProfileStudyDto } from './dto/profile_study.dto';
-import { ProfilesService } from './profiles.service';
 import { ProfileCreateStudyTagsDto } from './dto/profile_study_tag.dto';
+import { ProfilesService } from './profiles.service';
 
 /**
  * 사용자 프로필 관련 HTTP 엔드포인트를 처리하는 컨트롤러

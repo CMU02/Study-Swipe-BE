@@ -62,7 +62,7 @@ export class CanonicalTagsService {
     }
     const newCanonicalTags = this.canonicalTagsRepository.create({
       tag_name: tag,
-      embed: embed as number[],
+      embed: embed,
       category: categoryValue,
     });
 

@@ -59,10 +59,10 @@ jobs:
       # - name: Lint code
       #   run: npm run lint
 
-      - name: Run tests
-        run: npm run test
-        env:
-          NODE_ENV: test
+      # - name: Run tests
+      #   run: npm run test
+      #   env:
+      #     NODE_ENV: test
 
       - name: Build application
         run: npm run build

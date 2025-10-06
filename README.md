@@ -21,30 +21,73 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
+# Study Swipe
+
+[![CI](https://github.com/your-username/study-swipe/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/study-swipe/actions/workflows/ci.yml)
+
+스와이프 기반 스터디 매칭 플랫폼 백엔드 API
+
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Study Swipe는 NestJS 기반의 스터디 매칭 플랫폼입니다. AI 기반 설문조사와 가중치 점수 시스템을 통해 최적의 스터디 파트너를 찾아줍니다.
 
-## Project setup
+## 📚 Documentation
+
+- [API 문서](./api_document.md) - 전체 API 엔드포인트 문서
+- [에러 코드 문서](./api_code.md) - API 에러 코드 및 해결 방법
+- [CI/CD 설정 가이드](./.github/CI_SETUP.md) - GitHub Actions CI/CD 설정
+
+## 🚀 Quick Start
+
+### 1. 환경 설정
+
+```bash
+# .env 파일 생성
+cp .env.example .env
+
+# 환경변수 수정 (필수!)
+vim .env
+```
+
+**필수 환경변수:**
+
+- `DB_*`: PostgreSQL 데이터베이스 설정
+- `JWT_SECRET`, `JWT_REFRESH_SECRET`: JWT 토큰 시크릿 키
+- `OPENAI_API_KEY`: OpenAI API 키 (AI 설문조사용)
+- `AWS_*`, `SES_*`: AWS SES 이메일 설정 (선택)
+
+### 2. 의존성 설치
 
 ```bash
 $ npm install
 ```
 
-## Compile and run the project
+### 3. 데이터베이스 설정
+
+```bash
+# PostgreSQL 실행 확인
+pg_isready
+
+# 데이터베이스 생성
+createdb study_swipe
+```
+
+### 4. 애플리케이션 실행
 
 ```bash
 # development
 $ npm run start
 
-# watch mode
+# watch mode (권장)
 $ npm run start:dev
 
 # production mode
 $ npm run start:prod
 ```
 
-## Run tests
+서버가 실행되면 `http://localhost:3000`에서 접속 가능합니다.
+
+## 🧪 Testing
 
 ```bash
 # unit tests
@@ -55,20 +98,96 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+
+# watch mode
+$ npm run test:watch
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 🔧 Development
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# lint
+$ npm run lint
+
+# format
+$ npm run format
+
+# build
+$ npm run build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🎯 Features
+
+- **인증 시스템**: JWT 기반 회원가입/로그인, 이메일 인증
+- **프로필 관리**: 상세한 사용자 프로필 및 학습 선호도 설정
+- **AI 설문조사**: OpenAI 기반 맞춤형 설문 생성 및 점수 계산
+- **매칭 시스템**: 가중치 점수 기반 최적의 스터디 파트너 추천
+- **공부 태그**: 최대 5개의 공부 태그 및 숙련도 관리
+
+## 🏗️ Tech Stack
+
+- **Framework**: NestJS
+- **Language**: TypeScript
+- **Database**: PostgreSQL
+- **ORM**: TypeORM
+- **Authentication**: JWT
+- **AI**: OpenAI API
+- **Email**: AWS SES / Nodemailer
+- **Testing**: Jest
+
+## 📦 Project Structure
+
+```
+src/
+├── auth/              # 인증 모듈
+├── profiles/          # 프로필 관리
+├── matching/          # 매칭 시스템
+├── questions/         # AI 설문조사
+├── study_tags/        # 공부 태그 관리
+├── universities/      # 대학교 정보
+├── database/seeds/    # 테스트 데이터
+└── ...
+```
+
+## 🔐 Environment Variables
+
+프로젝트 실행에 필요한 환경변수는 `.env.example`을 참고하세요.
+
+```bash
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_PASSWORD=your_password
+DB_USERNAME=postgres
+DB_DATABASE=study_swipe
+
+# JWT
+JWT_SECRET=your_jwt_secret
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
+
+# OpenAI
+OPENAI_API_KEY=your_openai_key
+
+# AWS SES (선택)
+AWS_REGION=ap-northeast-2
+SES_ACCESS_KEY=your_access_key
+SES_SECRET_ACCESS_KEY=your_secret_key
+```
+
+## 🚢 Deployment
+
+### GitHub Actions CI/CD
+
+이 프로젝트는 GitHub Actions를 사용한 자동화된 CI/CD 파이프라인을 제공합니다.
+
+**CI 워크플로우**:
+
+- Lint 검사
+- 테스트 실행
+- 빌드 검증
+- 보안 감사
+
+자세한 설정 방법은 [CI/CD 설정 가이드](./.github/CI_SETUP.md)를 참고하세요.
 
 ## Resources
 
@@ -93,19 +212,22 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
-
 ## How to Use (사용 방식)
 
-- 질문 생성 
+- 질문 생성
   방식 - POST
   http://localhost:3000/ai/make-questions
-  ##  [SAMPLE] 
+
+  ## [SAMPLE]
+
   ```
   {
     "tags": ["BackEnd", "FrontEnd"]
   }
   ```
-  ##  [ANSWER]
+
+  ## [ANSWER]
+
   ```
   {
     "items": [
@@ -150,13 +272,17 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - 태그 중복 검출
   방식 - POST
   http://localhost:3000/tags/resolve
-  ##  [SAMPLE] 
+
+  ## [SAMPLE]
+
   ```
   {
     "tags": ["BackEnd", "FrontEnd"]
   }
   ```
-  ##  [ANSWER] 
+
+  ## [ANSWER]
+
   ```
   {
     "uniqueCanonical": [
@@ -193,7 +319,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 - 점수 산출 Ver.2
   방식 - POST
   http://localhost:3000/ai/score
-  ##  [SAMPLE] 
+
+  ## [SAMPLE]
+
   ```
     {
     "answers": [
@@ -216,11 +344,12 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
     ]
     }
   ```
-  ##  [ANSWER] 
+
+  ## [ANSWER]
   - tag : 사용자가 넣은 태그
   - count : 문항 개수
-  - sum : 각 문항 점수의 총합 
-  - wavg(가중치 평균) : (기초 * 1.0 + 경험 * 1.2 + 응용 * 1.4) / (1.0 + 1.2 + 1.4)
+  - sum : 각 문항 점수의 총합
+  - wavg(가중치 평균) : (기초 _ 1.0 + 경험 _ 1.2 + 응용 \* 1.4) / (1.0 + 1.2 + 1.4)
   - grade : 사용자의 등급 (초급, 중급, 상급)
   - details : 문제에 대한 정보
   - overall : 사용자에 대한 전반적인 점수 평가 (차후 코사인 정렬과 동일 점수대로 매칭)
@@ -285,9 +414,8 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
         "sumAvg": 10.5,
         "overallGrade": "중급"
     }
-}
+  }
   ```
-
 
 ## License
 

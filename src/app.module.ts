@@ -24,6 +24,7 @@ import { QuestionsModule } from './questions/questions.module';
 import { VectorModule } from './vector/vector.module';
 import { MatchingModule } from './matching/matching.module';
 import { SeedsModule } from './database/seeds/seeds.module';
+import { readFileSync } from 'fs';
 
 @Module({
   imports: [
@@ -39,7 +40,11 @@ import { SeedsModule } from './database/seeds/seeds.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE || 'study_swipe',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
+      ssl: {
+        rejectUnauthorized: true,
+        ca: readFileSync('./global-bundle.pem').toString(),
+      },
     }),
     ThrottlerModule.forRoot({
       throttlers: [

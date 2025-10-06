@@ -104,12 +104,12 @@ export class AuthService {
       }
     }
 
-    // 교육기관 이메일 형식 검증 (현재 비활성화)
-    // if (!this.isEducationEmail(user_email)) {
-    //   throw new BadRequestException(
-    //     '교육기관 이메일이 아닙니다. (.ac.kr, .edu, .academy)',
-    //   );
-    // }
+    // 교육기관 이메일 형식 검증
+    if (!this.isEducationEmail(user_email)) {
+      throw new BadRequestException(
+        '교육기관 이메일이 아닙니다. (.ac.kr, .edu, .academy)',
+      );
+    }
 
     // 사용자 존재 여부 및 인증 상태 검증
     await this.validateUserForVerification(user_id);

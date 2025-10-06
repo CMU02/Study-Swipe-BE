@@ -91,7 +91,7 @@ export class ProfilesService {
     const user = await this.userService.findUserUuid(uuid);
 
     // 기존 프로필 조회 또는 새로 생성
-    let profile = await this.findOrCreateProfile(user.uuid);
+    const profile = await this.findOrCreateProfile(user.uuid);
 
     // DTO 데이터를 프로필 객체에 병합
     Object.assign(profile, dto);
@@ -333,7 +333,7 @@ export class ProfilesService {
     // 기존 프로필 조회 또는 새로 생성
     const profile = await this.findOrCreateProfile(uuid);
 
-    let region = await this.regionsService.findRegionsByIds(regionId);
+    const region = await this.regionsService.findRegionsByIds(regionId);
 
     // 프로필에 지역 설정 및 저장
     profile.region = region;
@@ -374,7 +374,7 @@ export class ProfilesService {
     const profile = await this.findOrCreateProfile(uuid);
 
     // 모임 유형 정보 조회
-    let meetingType =
+    const meetingType =
       await this.meetingTypesService.findMeetingTypeById(meetingTypeId);
 
     // 프로필에 모임 유형 설정 및 저장

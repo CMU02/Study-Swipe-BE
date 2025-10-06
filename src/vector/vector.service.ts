@@ -23,7 +23,7 @@ export class VectorService {
       input: texts,
     });
 
-    return results.data.map((result) => result.embedding as number[]);
+    return results.data.map((result) => result.embedding);
   }
 
   async invokeChatModel(

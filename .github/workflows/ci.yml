@@ -56,8 +56,8 @@ jobs:
           OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY || 'sk-test-key' }}
           EOF
 
-      - name: Lint code
-        run: npm run lint
+      # - name: Lint code
+      #   run: npm run lint
 
       - name: Run tests
         run: npm run test

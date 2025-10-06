@@ -1,30 +1,37 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import { Item, QuestionsService } from './questions.service';
-import { TagResolverService } from '../tags/tags_resolver.service';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { QuestionsService } from './questions.service';
 import { Level, ScoreResponse, ScoreService } from './score.service';
-
-const normalizeKey = (s: string) =>
-  s.normalize('NFKC').trim().toLowerCase().replace(/[\s\-\_\/]/g, '');
+import { MakeQuestionsDTO } from './dto/make_question.dto';
+import { CompleteSurveyDto } from './dto/complete_survey.dto';
+import { StudyTagsService } from 'src/study_tags/study_tags.service';
+import { AuthGuard } from 'src/auth/authGuard';
+import { ProfilesService } from 'src/profiles/profiles.service';
 
 type InComingAnswerBlock = {
   tag: string;
-  questions: Array<{ no: number; level: Level; value: number}>;
-}
+  questions: Array<{ no: number; level: Level; value: number }>;
+};
 
 // GPT 관련은 웬만해서는 ai 로 통일
-
+@UseGuards(AuthGuard)
 @Controller('ai')
 export class QuestionsController {
   constructor(
     private readonly qs: QuestionsService,
-    private readonly tags: TagResolverService,
     private readonly scorer: ScoreService,
-
+    private readonly studyTagsService: StudyTagsService,
+    private readonly profilesService: ProfilesService,
   ) {}
 
   @Post('make-questions')
-  async makeQuestions(@Body() body: { tags?: string[] }) {
-
+  async makeQuestions(@Body() body: MakeQuestionsDTO) {
     // 입력 검증
     const raw = (body?.tags ?? []).map((s) => String(s).trim()).filter(Boolean);
 
@@ -36,43 +43,80 @@ export class QuestionsController {
     if (raw.length > 5)
       throw new BadRequestException('tags는 최대 5개까지만 허용됩니다.');
 
-    // 태그 표준화/매핑 (하드 동의어 + 임베딩 검색 + 캐시)
-    const resolved = await this.tags.resolveManyDetailed(raw);
-
-    // 중복 그룹 감지 (canonId 기준, 실패건은 canonical 정규화 기준)
-    type Group = { canonical: string; raws: string[] };
-    const groups = new Map<string, Group>();
-
-    for (const m of resolved.mappings) {
-      const key = m.canonId ? `canon:${m.canonId}` : `raw:${normalizeKey(m.canonical)}`;
-      const g = groups.get(key) ?? { canonical: m.canonical, raws: [] };
-      g.raws.push(m.raw);
-      groups.set(key, g);
-    }
-
-    const duplicates = Array.from(groups.values()).filter((g) => g.raws.length > 1);
-    if (duplicates.length > 0) {
-      throw new BadRequestException({
-        message: '중복된 태그가 있습니다. 제거해주세요.',
-        duplicates: duplicates.map((d) => ({ canonical: d.canonical, raws: d.raws })),
-      });
-    }
-
-    // 3) 중복 없음 → 디듑된(중복 제거된) 표준 태그로 질문 생성 (최대 5개 유지)
-    const canonicalTags = resolved.uniqueCanonical.slice(0, 5);
-    return this.qs.makeQuestions(canonicalTags);
+    return this.qs.makeQuestions(body.tags);
   }
 
   @Post('score')
-    async scoreByBlocks(
-      @Body()
-      body: { answers?: InComingAnswerBlock[] },
-    ): Promise<ScoreResponse> {
-      const blocks = body?.answers ?? [];
-      if (!Array.isArray(blocks) || blocks.length === 0) {
-        throw new BadRequestException('answers 배열(태그별 블록)을 제공해주세요.');
-      }
-      return this.scorer.scoreFromBlocks(blocks);
+  async scoreByBlocks(
+    @Body()
+    body: {
+      answers?: InComingAnswerBlock[];
+    },
+  ): Promise<ScoreResponse> {
+    const blocks = body?.answers ?? [];
+    if (!Array.isArray(blocks) || blocks.length === 0) {
+      throw new BadRequestException(
+        'answers 배열(태그별 블록)을 제공해주세요.',
+      );
     }
-}
+    return this.scorer.scoreFromBlocks(blocks);
+  }
 
+  @Post('complete-survey')
+  async completeSurvey(@Request() req: any, @Body() body: CompleteSurveyDto) {
+    const { answers } = body;
+    const userUuid = req.user.uuid;
+
+    // 입력 검증
+    if (!Array.isArray(answers) || answers.length === 0) {
+      throw new BadRequestException(
+        'answers 배열(태그별 블록)을 제공해주세요.',
+      );
+    }
+
+    // 1. JWT 토큰에서 사용자 UUID로 프로필 조회
+    const profileResponse = await this.profilesService.getProfile(userUuid);
+    const profile = profileResponse.option?.meta_data?.profile as any;
+
+    if (!profile || !profile.id) {
+      throw new BadRequestException('사용자 프로필을 찾을 수 없습니다.');
+    }
+
+    // 2. 점수 계산
+    const scoreResult = this.scorer.scoreFromBlocks(answers);
+
+    // 3. 태그별 점수 데이터 추출
+    const tagScores = scoreResult.perTag.map(({ sum, wavg, grade, tag }) => ({
+      tag,
+      sum,
+      wavg,
+      grade,
+    }));
+
+    // 4. StudyTags 테이블과 User 테이블 모두 업데이트 (새로운 통합 메서드 사용)
+    const updateResult = await this.studyTagsService.updateScoresAfterSurvey(
+      userUuid,
+      profile.id,
+      tagScores,
+      scoreResult.overall.wavg,
+    );
+
+    return {
+      message: '설문조사가 완료되었습니다.',
+      scoreResult,
+      updatedTags: updateResult.updatedTags.map((tag) => ({
+        id: tag.id,
+        tag_name: tag.tag_name,
+        proficiency_score: tag.proficiency_score,
+        proficiency_avg_score: tag.proficiency_avg_score,
+        proficiency_weight_avg_score: tag.proficiency_weight_avg_score,
+        proficiency_level: tag.proficiency_levels,
+        is_survey_completed: tag.is_survey_completed,
+      })),
+      updatedUser: {
+        uuid: updateResult.updatedUser.uuid,
+        weight_avg_score: updateResult.updatedUser.weight_avg_score,
+      },
+    };
+  }
+}

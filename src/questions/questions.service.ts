@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import OpenAI from 'openai';
+import { VectorService } from 'src/vector/vector.service';
 
 export type Level = '기초' | '경험' | '응용';
 export type QuestionOut = { no: number; level: Level; text: string };
@@ -7,35 +8,9 @@ export type Item = { tag: string; questions: QuestionOut[] };
 
 export type MakeQuestionsResult = { items: Item[] };
 
-/** 모델 id 보정: 잘못된 값(o4-mini 등)을 유효한 id로 변환 */
-function normalizeModelId(input?: string): string {
-  const v = (input || '').trim();
-  if (!v) return 'gpt-4o-mini';
-  const l = v.toLowerCase();
-  if (l === '4o') return 'gpt-4o';
-  if (l === 'o4-mini' || l === 'gpt4o-mini') return 'gpt-4o-mini';
-  if (l === 'gpt4o') return 'gpt-4o';
-  return v;
-}
-
 @Injectable()
 export class QuestionsService {
-  private client: OpenAI;
-  private model: string;
-
-  constructor() {
-    // env 에서 API_KEY 가져옴.
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new InternalServerErrorException('.env 내 API KEY 확인');
-    }
-    this.client = new OpenAI({ apiKey });
-
-    // 잘못된 기본값(o4-mini) 보정 + OPENAI_CHAT_MODEL도 지원
-    this.model = normalizeModelId(
-      process.env.OPENAI_MODEL || process.env.OPENAI_CHAT_MODEL || 'gpt-4o-mini',
-    );
-  }
+  constructor(private vectorService: VectorService) {}
 
   // 질문 생성 기능
   // 표준화 및 중복 제거가 끝난 최종 태그로 문항 생성
@@ -61,18 +36,11 @@ export class QuestionsService {
     const user = `태그 목록: ${finalTags.join(', ')}`;
 
     // 응답 생성
-    const res = await this.client.chat.completions.create({
-      model: this.model,
-      temperature: 0.7,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-    });
+    const raw = await this.vectorService.invokeChatModel(system, user);
 
-    let raw = res.choices?.[0]?.message?.content?.trim() ?? '';
-    // ```json … ``` 제거 방어
-    raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/```$/i, '').trim();
+    if (!raw) {
+      throw new InternalServerErrorException(`OpenAI 응답 없음 : ${raw}`);
+    }
 
     // JSON 파싱 시도
     try {
@@ -87,15 +55,14 @@ export class QuestionsService {
       // Items 정제 (+ 번호/레벨 보정)
       const items: Item[] = itemsIn.map((it) => ({
         tag: String(it.tag ?? ''),
-        questions: (it.questions || [])
-          .slice(0, 3)
-          .map((q, i) => {
-            const level: Level =
-              (['기초', '경험', '응용'] as const).includes((q as any).level as Level)
-                ? ((q as any).level as Level)
-                : lvOrder[Math.min(i, 2)];
-            return { no: seq++, level, text: String((q as any).text ?? '') };
-          }),
+        questions: (it.questions || []).slice(0, 3).map((q, i) => {
+          const level: Level = (['기초', '경험', '응용'] as const).includes(
+            (q as any).level as Level,
+          )
+            ? ((q as any).level as Level)
+            : lvOrder[Math.min(i, 2)];
+          return { no: seq++, level, text: String((q as any).text ?? '') };
+        }),
       }));
 
       return { items };
@@ -105,9 +72,21 @@ export class QuestionsService {
       const items: Item[] = finalTags.map((t) => ({
         tag: t,
         questions: [
-          { no: seq++, level: '기초', text: `${t}의 핵심 개념과 역할을 설명할 수 있다.` },
-          { no: seq++, level: '경험', text: `${t}을(를) 활용해 작은 기능이나 모듈을 직접 구현해 본 경험이 있다.` },
-          { no: seq++, level: '응용', text: `${t}을(를) 사용해 요구사항을 분석하고 적절한 설계를 적용해 문제를 해결한 경험이 있다.` },
+          {
+            no: seq++,
+            level: '기초',
+            text: `${t}의 핵심 개념과 역할을 설명할 수 있다.`,
+          },
+          {
+            no: seq++,
+            level: '경험',
+            text: `${t}을(를) 활용해 작은 기능이나 모듈을 직접 구현해 본 경험이 있다.`,
+          },
+          {
+            no: seq++,
+            level: '응용',
+            text: `${t}을(를) 사용해 요구사항을 분석하고 적절한 설계를 적용해 문제를 해결한 경험이 있다.`,
+          },
         ],
       }));
       return { items };

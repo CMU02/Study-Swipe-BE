@@ -38,9 +38,7 @@ Content-Type: application/json
 ```json
 {
   "user_id": "testuser",
-  "email": "test@example.com",
-  "password": "Password123!",
-  "password_confirm": "Password123!"
+  "user_pwd": "testing123"
 }
 ```
 
@@ -49,14 +47,7 @@ Content-Type: application/json
 ```json
 {
   "status_code": 201,
-  "message": "회원가입이 완료되었습니다.",
-  "option": {
-    "data": {
-      "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
-      "user_id": "testuser",
-      "email": "test@example.com"
-    }
-  }
+  "message": "아이디가 성공적으로 등록되었습니다. 이메일 인증을 진행해주세요."
 }
 ```
 
@@ -75,7 +66,8 @@ Content-Type: application/json
 
 ```json
 {
-  "email": "test@example.com"
+  "user_id": "test1369",
+  "user_email": "testing@naver.com"
 }
 ```
 
@@ -84,7 +76,7 @@ Content-Type: application/json
 ```json
 {
   "status_code": 200,
-  "message": "인증 코드가 이메일로 발송되었습니다."
+  "message": "인증코드가 이메일로 발송되었습니다."
 }
 ```
 
@@ -103,8 +95,9 @@ Content-Type: application/json
 
 ```json
 {
-  "email": "test@example.com",
-  "code": "123456"
+  "user_id": "test1369",
+  "user_email": "hyeonjun1968@naver.com",
+  "verify_code": "244482"
 }
 ```
 
@@ -113,7 +106,7 @@ Content-Type: application/json
 ```json
 {
   "status_code": 200,
-  "message": "이메일 인증이 완료되었습니다.",
+  "message": "인증이 완료되었습니다. 회원가입을 환영합니다!",
   "option": {
     "data": {
       "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -138,8 +131,8 @@ Content-Type: application/json
 
 ```json
 {
-  "user_id": "testuser",
-  "password": "Password123!"
+  "user_id": "test1369",
+  "user_pwd": "testing1369"
 }
 ```
 
@@ -175,12 +168,20 @@ Content-Type: application/json
 
 ```json
 {
-  "user_id": "testuser",
+  "user_id": "test1369",
   "is_over_18": true,
   "terms_of_service": true,
   "collection_usage_personal_informaiton": true,
-  "third_party_sharing": true,
-  "user_alarm_advertisement": false
+  "third_party_sharing": true
+}
+```
+
+**Response Body:**
+
+```json
+{
+  "status_code": 200,
+  "message": "약관 동의를 완료했습니다."
 }
 ```
 
@@ -194,27 +195,6 @@ Content-Type: application/json
 | collection_usage_personal_informaiton | boolean | 필수 | 개인정보 수집 및 이용 동의 |
 | third_party_sharing                   | boolean | 필수 | 제3자 정보 제공 동의       |
 | user_alarm_advertisement              | boolean | 선택 | 광고성 알림 수신 동의      |
-
-**Response:**
-
-```json
-{
-  "status_code": 201,
-  "message": "약관 동의가 완료되었습니다.",
-  "option": {
-    "data": {
-      "id": 1,
-      "user_id": "testuser",
-      "is_over_18": true,
-      "terms_of_service": true,
-      "collection_usage_personal_informaiton": true,
-      "third_party_sharing": true,
-      "user_alarm_advertisement": false,
-      "created_at": "2025-10-05T12:00:00.000Z"
-    }
-  }
-}
-```
 
 **주의사항:**
 
@@ -251,9 +231,9 @@ Content-Type: application/json
   "message": "대학교 정보가 성공적으로 업데이트되었습니다.",
   "option": {
     "meta_data": {
-      "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
+      "user_uuid": "f706d372-f100-458f-ad47-df7a87a678bb",
       "university": {
-        "id": "서울대학교",
+        "id": "0b05cac2-9a36-412b-ae73-414706309bc7",
         "name": "서울대학교"
       }
     }
@@ -314,62 +294,63 @@ Authorization: Bearer <JWT_TOKEN>
     "meta_data": {
       "profile": {
         "id": 1,
-        "display_name": "김철수",
-        "image": "https://example.com/profile.jpg",
-        "age": 23,
+        "display_name": "스터디 마스터",
+        "image": "testImage.png",
+        "birth_date": "2001-12-07",
+        "age": 20,
         "gender": "남성",
-        "bio_note": "백엔드 개발자를 꿈꾸는 학생입니다.",
-        "goals_note": "스프링 부트 마스터하기",
+        "bio_note": "Hello This Service Study Swipe",
+        "goals_note": "토익 900점 달성하기",
         "activity_radius_km": 10,
-        "contact_info": "kakao_testuser",
-        "university": {
-          "id": "서울대학교",
-          "name": "서울대학교"
-        },
-        "major": {
+        "preferred_member_count": {
           "id": 1,
-          "name": "컴퓨터공학"
+          "min_member_count": 3,
+          "max_member_count": 6,
+          "createdAt": "2025-10-06T10:43:56.294Z",
+          "updatedAt": "2025-10-06T10:43:56.294Z"
         },
-        "region": {
-          "id": "seoul_gangnam",
-          "city_first": "서울특별시",
-          "city_second": "강남구"
-        },
-        "participation_info": {
-          "period": 3,
-          "period_length": "중기",
-          "start_time": "09:00",
-          "end_time": "18:00"
-        },
-        "collab_style": {
-          "id": 1,
-          "name": "피어",
-          "description": "같이 성장"
-        },
-        "meeting_type": {
-          "id": 1,
-          "name": "혼합"
-        },
+        "contact_info": "카카오톡: study_buddy",
         "smoking_status": {
-          "id": 1,
+          "id": "2",
           "name": "비흡연"
         },
         "social_pref": {
           "id": 1,
           "name": "네"
         },
-        "preferred_member_count": {
-          "min_member_count": 3,
-          "max_member_count": 5
+        "participation_info": {
+          "id": 1,
+          "period": 2,
+          "period_length": "단기",
+          "start_time": "18:00",
+          "end_time": "21:00",
+          "createdAt": "2025-10-06T10:45:28.548Z",
+          "updatedAt": "2025-10-06T10:45:28.548Z",
+          "deletedAt": null
         },
-        "study_tags": [
-          {
-            "id": "uuid",
-            "tag_name": "백엔드",
-            "priority": 1,
-            "proficiency_level": "중급"
-          }
-        ]
+        "region": {
+          "id": "1100000000",
+          "city_first": "서울특별시",
+          "city_second": null,
+          "lat": "48.03000000",
+          "lng": "48.85000000"
+        },
+        "meeting_type": {
+          "id": 1,
+          "name": "온라인"
+        },
+        "major": {
+          "id": 1,
+          "name": "응용SW전공"
+        },
+        "collab_style": {
+          "id": 1,
+          "name": "멘토",
+          "description": "가르쳐주고 싶음"
+        },
+        "createdAt": "2025-10-06T10:42:49.236Z",
+        "updatedAt": "2025-10-06T10:45:23.030Z",
+        "deletedAt": null
       }
     }
   }
@@ -395,9 +376,13 @@ Content-Type: application/json
   "display_name": "김철수",
   "gender": "남성",
   "birth_date": "2000-01-01",
-  "bio_note": "백엔드 개발자를 꿈꾸는 학생입니다."
+  "bio_note": "백엔드 개발자를 꿈꾸는 학생입니다.",
+  "age": 21,
+  "image": "testing.png"
 }
 ```
+
+> ⚠️ **이미지는 아직 S3 연결되지 않음**
 
 ---
 
@@ -415,8 +400,12 @@ Content-Type: application/json
 
 ```json
 {
-  "display_name": "김철수",
-  "bio_note": "풀스택 개발자를 목표로 하고 있습니다."
+  "display_name": "스터디 마스터",
+  "bio_note": "Hello This Service Study Swipe",
+  "image": "testImage.png",
+  "birth_date": "2001-12-07",
+  "age": "20",
+  "gender": "남성"
 }
 ```
 
@@ -563,7 +552,126 @@ Content-Type: application/json
 
 ```json
 {
-  "region_id": "seoul_gangnam"
+  "region_ids": "1120062000"
+}
+```
+
+### 11-1. 지역정보 ID 찾기
+
+#### 전체지역 조회
+
+```http
+GET /regions
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "status_code": 200,
+  "message": "지역 목록 조회 성공",
+  "option": {
+    "meta_data": {
+      "regions": [
+        {
+          "id": "1100000000",
+          "city_first": "서울특별시",
+          "city_second": null,
+          "lat": "48.85000000",
+          "lng": "48.03000000"
+        },
+        {
+          "id": "1111000000",
+          "city_first": "서울특별시",
+          "city_second": "종로구",
+          "lat": "13.36000000",
+          "lng": "53.91000000"
+        }
+        // ...
+      ]
+    }
+  }
+}
+```
+
+### 시/도 목록 조회
+
+```http
+GET /regions/cities
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "status_code": 200,
+  "message": "시/도 목록 조회 성공",
+  "option": {
+    "meta_data": {
+      "cities": [
+        "경기도",
+        "이어도",
+        "경상남도",
+        "경상북도",
+        "전라남도",
+        "충청남도",
+        "충청북도",
+        "광주광역시",
+        "대구광역시",
+        "대전광역시",
+        "부산광역시",
+        "서울특별시",
+        "울산광역시",
+        "인천광역시",
+        "강원특별자치도",
+        "세종특별자치시",
+        "전북특별자치도",
+        "제주특별자치도"
+      ]
+    }
+  }
+}
+```
+
+### 특정 시/도의 지역 조회
+
+```http
+GET /regions/city/서울특별시
+Authorization: Bearer <JWT_TOKEN>
+Content-Type: application/json
+```
+
+**Request Body:**
+
+```json
+{
+  "status_code": 200,
+  "message": "서울특별시 지역 목록 조회 성공",
+  "option": {
+    "meta_data": {
+      "regions": [
+        {
+          "id": "1114057000",
+          "city_first": "서울특별시",
+          "city_second": "중구",
+          "lat": "26.47000000",
+          "lng": "51.76000000"
+        },
+        {
+          "id": "1114058000",
+          "city_first": "서울특별시",
+          "city_second": "중구",
+          "lat": "32.82000000",
+          "lng": "35.76000000"
+        }
+        // ...
+      ]
+    }
+  }
 }
 ```
 
@@ -751,84 +859,7 @@ Content-Type: application/json
 
 ---
 
-### 2. 설문 점수 계산
-
-설문 응답을 기반으로 점수를 계산합니다.
-
-```http
-POST /ai/score
-Authorization: Bearer <JWT_TOKEN>
-Content-Type: application/json
-```
-
-**Request Body:**
-
-```json
-{
-  "answers": [
-    {
-      "tag": "백엔드",
-      "questions": [
-        { "no": 1, "level": "기초", "value": 4 },
-        { "no": 2, "level": "경험", "value": 3 },
-        { "no": 3, "level": "응용", "value": 5 }
-      ]
-    },
-    {
-      "tag": "프론트엔드",
-      "questions": [
-        { "no": 4, "level": "기초", "value": 2 },
-        { "no": 5, "level": "경험", "value": 3 },
-        { "no": 6, "level": "응용", "value": 4 }
-      ]
-    }
-  ]
-}
-```
-
-**Response:**
-
-```json
-{
-  "perTag": [
-    {
-      "tag": "백엔드",
-      "count": 3,
-      "sum": 12,
-      "wavg": 4.06,
-      "grade": "상급",
-      "details": [
-        { "no": 1, "level": "기초", "value": 4 },
-        { "no": 2, "level": "경험", "value": 3 },
-        { "no": 3, "level": "응용", "value": 5 }
-      ]
-    },
-    {
-      "tag": "프론트엔드",
-      "count": 3,
-      "sum": 9,
-      "wavg": 3.11,
-      "grade": "중급",
-      "details": [
-        { "no": 4, "level": "기초", "value": 2 },
-        { "no": 5, "level": "경험", "value": 3 },
-        { "no": 6, "level": "응용", "value": 4 }
-      ]
-    }
-  ],
-  "overall": {
-    "count": 6,
-    "avg5": 3.5,
-    "wavg": 3.58,
-    "sumAvg": 10.5,
-    "overallGrade": "중급"
-  }
-}
-```
-
----
-
-### 3. 설문조사 완료
+### 2. 설문조사 완료
 
 설문조사를 완료하고 결과를 DB에 저장합니다.
 
@@ -861,24 +892,52 @@ Content-Type: application/json
 {
   "message": "설문조사가 완료되었습니다.",
   "scoreResult": {
-    "perTag": [...],
-    "overall": {...}
+    "perTag": [
+      {
+        "tag": "Figma",
+        "count": 3,
+        "sum": 8,
+        "wavg": 2.83,
+        "grade": "중급",
+        "details": [
+          {
+            "no": 10,
+            "level": "기초",
+            "value": 1
+          },
+          {
+            "no": 11,
+            "level": "경험",
+            "value": 3
+          },
+          {
+            "no": 12,
+            "level": "응용",
+            "value": 4
+          }
+        ]
+      }
+      // ...
+    ],
+    "overall": {
+      "count": 15,
+      "avg5": 3.53,
+      "wavg": 3.58,
+      "sumAvg": 10.6,
+      "overallGrade": "중급"
+    }
   },
   "updatedTags": [
     {
-      "id": "uuid",
-      "tag_name": "백엔드",
-      "proficiency_score": 12,
-      "proficiency_avg_score": 4,
-      "proficiency_weight_avg_score": 4.06,
-      "proficiency_level": "상급",
+      "id": "7126b093-c273-4311-9042-b31616ae7dbd",
+      "tag_name": "Figma",
+      "proficiency_score": 8,
+      "proficiency_avg_score": 2.83,
+      "proficiency_level": "중급",
       "is_survey_completed": true
     }
-  ],
-  "updatedUser": {
-    "uuid": "550e8400-e29b-41d4-a716-446655440000",
-    "weight_avg_score": 3.58
-  }
+    // ...
+  ]
 }
 ```
 
@@ -922,43 +981,43 @@ GET /matching/by-tag?page=1&limit=20
   "option": {
     "data": [
       {
-        "profile_id": 1,
-        "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
-        "display_name": "김철수",
-        "image": "https://example.com/profile.jpg",
-        "goals_note": "스프링 부트 마스터하기",
-        "university_name": "서울대학교",
-        "major_name": "컴퓨터공학",
-        "region": "서울특별시 강남구",
+        "profile_id": 12,
+        "user_uuid": "da8230f1-0cef-4fa8-9ba9-2638f4924e38",
+        "display_name": "오준석",
+        "image": null,
+        "goals_note": "해킹 방어 기술 익히기",
+        "university_name": "연세대학교",
+        "major_name": null,
+        "region": null,
         "start_time": "09:00",
         "end_time": "18:00",
-        "period": 3,
-        "period_length": "중기",
-        "age": 23,
+        "period": 6,
+        "period_length": "장기",
+        "age": 25,
         "gender": "남성",
-        "collab_style_name": "피어",
-        "collab_style_description": "같이 성장",
-        "meeting_type_name": "혼합",
-        "smoking_status": "비흡연",
-        "preferred_member_count": "3-5명",
+        "collab_style_name": null,
+        "collab_style_description": null,
+        "meeting_type_name": null,
+        "smoking_status": null,
+        "preferred_member_count": null,
         "study_tags": [
           {
-            "tag_name": "백엔드",
+            "tag_name": "보안",
             "priority": 1,
             "proficiency_level": "중급"
           },
           {
-            "tag_name": "Java",
+            "tag_name": "네트워크",
             "priority": 2,
-            "proficiency_level": "초급"
+            "proficiency_level": "중급"
           },
           {
-            "tag_name": "Spring",
+            "tag_name": "해킹",
             "priority": 3,
             "proficiency_level": "초급"
           }
         ],
-        "match_score": 0.78
+        "match_score": 0.74
       }
     ],
     "pagination": {

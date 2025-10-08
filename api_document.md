@@ -655,18 +655,19 @@ Content-Type: application/json
     "meta_data": {
       "regions": [
         {
-          "id": "1114057000",
           "city_first": "서울특별시",
           "city_second": "중구",
-          "lat": "26.47000000",
-          "lng": "51.76000000"
+          "regions_id": "1114000000"
         },
         {
-          "id": "1114058000",
           "city_first": "서울특별시",
-          "city_second": "중구",
-          "lat": "32.82000000",
-          "lng": "35.76000000"
+          "city_second": "강남구",
+          "regions_id": "1168000000"
+        },
+        {
+          "city_first": "서울특별시",
+          "city_second": "강동구",
+          "regions_id": "1174000000"
         }
         // ...
       ]

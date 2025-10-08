@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Regions } from './regions.entity';
 
 /**
@@ -50,14 +50,26 @@ export class RegionsService {
 
   /**
    * 시/도로 지역 목록을 조회합니다.
+   * city_second 기준으로 중복 제거하되, 각 city_second에 대해 하나의 regions_id를 반환합니다.
    * @param cityFirst 시/도 이름
-   * @returns 해당 시/도의 지역 목록
+   * @returns 해당 시/도의 지역 목록 (city_second 중복 제거)
    */
-  async findRegionsByCityFirst(cityFirst: string): Promise<Regions[]> {
-    return this.regionsRepository.find({
-      where: { city_first: cityFirst },
-      order: { city_second: 'ASC' },
-    });
+  async findRegionsByCityFirst(
+    cityFirst: string,
+  ): Promise<
+    { city_first: string; city_second: string; regions_id: string }[]
+  > {
+    return this.regionsRepository
+      .createQueryBuilder('regions')
+      .select([
+        'regions.city_first as city_first',
+        'regions.city_second as city_second',
+        'MIN(regions.id) as regions_id',
+      ])
+      .where('regions.city_first = :cityFirst', { cityFirst })
+      .groupBy('regions.city_first, regions.city_second')
+      .orderBy('regions.city_second', 'ASC')
+      .getRawMany();
   }
 
   /**

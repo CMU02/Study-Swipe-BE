@@ -81,6 +81,7 @@ export class AuthService {
    * @throws HttpException 쿨다운 시간이 남아있는 경우 (429)
    * @throws BadRequestException 존재하지 않는 사용자인 경우
    * @throws ConflictException 이미 인증 완료된 사용자인 경우
+   * @throws ConflictException 이미 사용 중인 이메일인 경우
    */
   async requestVerificationCode(
     verifyCodeDto: RequestVerificationCodeDto,
@@ -110,6 +111,9 @@ export class AuthService {
         '교육기관 이메일이 아닙니다. (.ac.kr, .edu, .academy)',
       );
     }
+
+    // 이메일 중복 체크
+    await this.checkEmailDuplicate(user_email);
 
     // 사용자 존재 여부 및 인증 상태 검증
     await this.validateUserForVerification(user_id);
@@ -287,6 +291,22 @@ export class AuthService {
     // 이미 인증 완료된 사용자인지 확인
     if (findUser.email_verified) {
       throw new ConflictException('이미 인증이 완료된 사용자입니다.');
+    }
+  }
+
+  /**
+   * 이메일 중복 여부를 확인합니다.
+   * @param email 확인할 이메일 주소
+   * @throws ConflictException 이미 사용 중인 이메일인 경우
+   * @private
+   */
+  private async checkEmailDuplicate(email: string): Promise<void> {
+    const existingEmail = await this.userRepository.findOne({
+      where: { email },
+    });
+
+    if (existingEmail) {
+      throw new ConflictException('이미 사용 중인 이메일입니다.');
     }
   }
 }

@@ -80,11 +80,11 @@ export class Profiles {
 
   /**
    * 선호 인원 수
+   * 연관관계 주인: PreferredMemberCount
    */
   @OneToOne(() => PreferredMemberCount, (pmc) => pmc.profiles, {
     nullable: true,
   })
-  @JoinColumn({ name: 'preferred_member_count_id' })
   preferred_member_count: PreferredMemberCount | null;
 
   /**

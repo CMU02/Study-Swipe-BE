@@ -33,9 +33,17 @@ export class PreferredMemberCount {
 
   /**
    * 이 선호도를 가진 프로필 (1:1 관계)
+   * 연관관계 주인: PreferredMemberCount
    */
   @OneToOne(() => Profiles, (profile) => profile.preferred_member_count)
+  @JoinColumn({ name: 'profile_id' })
   profiles: Profiles;
+
+  /**
+   * 프로필 ID (외래키)
+   */
+  @Column({ name: 'profile_id', type: 'integer', unique: true, nullable: true })
+  profileId: number;
 
   /**
    * 생성 일시

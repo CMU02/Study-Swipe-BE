@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PreferredMemberCount } from './preferred_member_count.entity';
@@ -16,41 +20,48 @@ export class PreferredMemberCountService {
 
   /**
    * 선호 인원 수 정보를 생성하거나 업데이트합니다.
+   * @param profileId 프로필 ID
    * @param minCount 최소 인원 수
    * @param maxCount 최대 인원 수
    * @returns 생성되거나 업데이트된 선호 인원 수 엔티티
    * @throws Error 최소 인원이 최대 인원보다 큰 경우
    */
   async createOrUpdatePreferredMemberCount(
+    profileId: number,
     minCount: number,
     maxCount: number,
   ): Promise<PreferredMemberCount> {
     // 유효성 검증
     if (minCount > maxCount) {
-      throw new Error('최소 인원 수는 최대 인원 수보다 클 수 없습니다.');
+      throw new BadRequestException(
+        '최소 인원 수는 최대 인원 수보다 클 수 없습니다.',
+      );
     }
 
     if (minCount < 2 || maxCount > 10) {
-      throw new Error('인원 수는 2명 이상 10명 이하여야 합니다.');
+      throw new BadRequestException('인원 수는 2명 이상 10명 이하여야 합니다.');
     }
 
-    // 동일한 최소/최대 인원 수 조합이 있는지 확인
+    // 해당 프로필의 기존 선호 인원 수 조회
     let preferredMemberCount =
       await this.preferredMemberCountRepository.findOne({
-        where: {
-          min_member_count: minCount,
-          max_member_count: maxCount,
-        },
+        where: { profileId },
       });
 
-    if (!preferredMemberCount) {
+    if (preferredMemberCount) {
+      // 기존 레코드가 있으면 업데이트
+      preferredMemberCount.min_member_count = minCount;
+      preferredMemberCount.max_member_count = maxCount;
+    } else {
       // 없으면 새로 생성
       preferredMemberCount = this.preferredMemberCountRepository.create({
+        profileId,
         min_member_count: minCount,
         max_member_count: maxCount,
       });
-      await this.preferredMemberCountRepository.save(preferredMemberCount);
     }
+
+    await this.preferredMemberCountRepository.save(preferredMemberCount);
 
     return preferredMemberCount;
   }

@@ -188,9 +188,10 @@ export class ProfilesService {
     // 기존 프로필 조회 또는 새로 생성
     const profile = await this.findOrCreateProfile(uuid);
 
-    // 선호 인원 수 생성 또는 조회
+    // 선호 인원 수 생성 또는 업데이트 (프로필 ID 기준)
     const preferredMemberCount =
       await this.preferredMemberCountService.createOrUpdatePreferredMemberCount(
+        profile.id,
         minCount,
         maxCount,
       );

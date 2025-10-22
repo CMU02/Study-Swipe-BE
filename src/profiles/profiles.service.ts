@@ -59,6 +59,7 @@ export class ProfilesService {
         'meeting_type',
         'major',
         'collab_style',
+        'study_tags',
       ],
     });
 

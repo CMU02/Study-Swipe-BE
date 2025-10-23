@@ -51,6 +51,8 @@ export class ProfilesService {
     const profile = await this.profilesRepository.findOne({
       where: { user: { uuid } },
       relations: [
+        'user',
+        'user.universities',
         'smoking_status',
         'social_pref',
         'participation_info',
@@ -65,6 +67,18 @@ export class ProfilesService {
 
     if (!profile) {
       throw new NotFoundException('프로필 정보를 찾을 수 없습니다.');
+    }
+
+    // 민감한 정보 제거 (보안)
+    if (profile.user) {
+      const {
+        password,
+        email_verified,
+        email_verified_at,
+        create_at,
+        ...safeUserData
+      } = profile.user;
+      profile.user = safeUserData as any;
     }
 
     return {

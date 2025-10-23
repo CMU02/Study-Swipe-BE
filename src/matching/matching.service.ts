@@ -138,6 +138,7 @@ export class MatchingService {
       .leftJoinAndSelect('profile.collab_style', 'collab_style')
       .leftJoinAndSelect('profile.meeting_type', 'meeting_type')
       .leftJoinAndSelect('profile.smoking_status', 'smoking_status')
+      .leftJoinAndSelect('profile.social_pref', 'social_pref')
       .leftJoinAndSelect(
         'profile.preferred_member_count',
         'preferred_member_count',
@@ -189,6 +190,7 @@ export class MatchingService {
       .leftJoinAndSelect('profile.collab_style', 'collab_style')
       .leftJoinAndSelect('profile.meeting_type', 'meeting_type')
       .leftJoinAndSelect('profile.smoking_status', 'smoking_status')
+      .leftJoinAndSelect('profile.social_pref', 'social_pref')
       .leftJoinAndSelect(
         'profile.preferred_member_count',
         'preferred_member_count',

@@ -7,6 +7,7 @@ import { Profiles } from 'src/profiles/profiles.entity';
 import { participationInfo } from 'src/participation_info/participation_info.entity';
 import { StudyTags } from 'src/study_tags/study_tags.entity';
 import { Universities } from 'src/universities/universities.entity';
+import { SocialPrefs } from 'src/social_prefs/social_prefs.entity';
 
 /**
  * 테스트 사용자 시드 데이터 생성 서비스
@@ -25,6 +26,8 @@ export class TestUsersSeedService {
     private studyTagsRepository: Repository<StudyTags>,
     @InjectRepository(Universities)
     private universitiesRepository: Repository<Universities>,
+    @InjectRepository(SocialPrefs)
+    private socialPrefsRepository: Repository<SocialPrefs>,
   ) {}
 
   /**
@@ -35,6 +38,9 @@ export class TestUsersSeedService {
 
     // 대학교 데이터 생성 (없으면)
     const universities = await this.createUniversities();
+
+    // 사교모임 선호도 데이터 생성 (없으면)
+    const socialPrefs = await this.createSocialPrefs();
 
     // 테스트 사용자 데이터
     const testUsersData = [
@@ -52,6 +58,7 @@ export class TestUsersSeedService {
         start_time: '09:00',
         end_time: '18:00',
         university: universities[0],
+        social_pref_id: 0, // '네'
         study_tags: [
           { tag_name: '백엔드', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'Java', priority: 2, proficiency_levels: '초급' },
@@ -72,6 +79,7 @@ export class TestUsersSeedService {
         start_time: '14:00',
         end_time: '22:00',
         university: universities[1],
+        social_pref_id: 2, // '가끔'
         study_tags: [
           { tag_name: '프론트엔드', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'React', priority: 2, proficiency_levels: '중급' },
@@ -92,6 +100,7 @@ export class TestUsersSeedService {
         start_time: '19:00',
         end_time: '23:00',
         university: universities[0],
+        social_pref_id: 1, // '아니오'
         study_tags: [
           { tag_name: 'Python', priority: 1, proficiency_levels: '중급' },
           { tag_name: '데이터분석', priority: 2, proficiency_levels: '초급' },
@@ -112,6 +121,7 @@ export class TestUsersSeedService {
         start_time: '10:00',
         end_time: '17:00',
         university: universities[2],
+        social_pref_id: 0, // '네'
         study_tags: [
           { tag_name: 'UI/UX', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'Figma', priority: 2, proficiency_levels: '중급' },
@@ -132,6 +142,7 @@ export class TestUsersSeedService {
         start_time: '09:00',
         end_time: '22:00',
         university: universities[1],
+        social_pref_id: 2, // '가끔'
         study_tags: [
           { tag_name: '풀스택', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'Node.js', priority: 2, proficiency_levels: '중급' },
@@ -152,6 +163,7 @@ export class TestUsersSeedService {
         start_time: '13:00',
         end_time: '20:00',
         university: universities[0],
+        social_pref_id: 0, // '네'
         study_tags: [
           { tag_name: 'Flutter', priority: 1, proficiency_levels: '초급' },
           { tag_name: 'Dart', priority: 2, proficiency_levels: '초급' },
@@ -172,6 +184,7 @@ export class TestUsersSeedService {
         start_time: '18:00',
         end_time: '23:00',
         university: universities[2],
+        social_pref_id: 1, // '아니오'
         study_tags: [
           { tag_name: 'AWS', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'DevOps', priority: 2, proficiency_levels: '초급' },
@@ -192,6 +205,7 @@ export class TestUsersSeedService {
         start_time: '15:00',
         end_time: '21:00',
         university: universities[1],
+        social_pref_id: 2, // '가끔'
         study_tags: [
           { tag_name: 'Unity', priority: 1, proficiency_levels: '초급' },
           { tag_name: 'C#', priority: 2, proficiency_levels: '초급' },
@@ -212,6 +226,7 @@ export class TestUsersSeedService {
         start_time: '20:00',
         end_time: '24:00',
         university: universities[0],
+        social_pref_id: 0, // '네'
         study_tags: [
           { tag_name: '블록체인', priority: 1, proficiency_levels: '초급' },
           { tag_name: 'Solidity', priority: 2, proficiency_levels: '초급' },
@@ -232,6 +247,7 @@ export class TestUsersSeedService {
         start_time: '10:00',
         end_time: '19:00',
         university: universities[2],
+        social_pref_id: 1, // '아니오'
         study_tags: [
           { tag_name: '딥러닝', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'PyTorch', priority: 2, proficiency_levels: '초급' },
@@ -252,6 +268,7 @@ export class TestUsersSeedService {
         start_time: '09:00',
         end_time: '18:00',
         university: universities[1],
+        social_pref_id: 2, // '가끔'
         study_tags: [
           { tag_name: '보안', priority: 1, proficiency_levels: '중급' },
           { tag_name: '네트워크', priority: 2, proficiency_levels: '중급' },
@@ -272,6 +289,7 @@ export class TestUsersSeedService {
         start_time: '14:00',
         end_time: '20:00',
         university: universities[0],
+        social_pref_id: 0, // '네'
         study_tags: [
           { tag_name: 'Database', priority: 1, proficiency_levels: '중급' },
           { tag_name: 'SQL', priority: 2, proficiency_levels: '중급' },
@@ -282,7 +300,7 @@ export class TestUsersSeedService {
 
     // 사용자 생성
     for (const userData of testUsersData) {
-      await this.createTestUser(userData);
+      await this.createTestUser(userData, socialPrefs);
     }
 
     console.log('✅ 테스트 사용자 시드 데이터 생성 완료!');
@@ -314,9 +332,35 @@ export class TestUsersSeedService {
   }
 
   /**
+   * 사교모임 선호도 데이터 생성
+   */
+  private async createSocialPrefs(): Promise<SocialPrefs[]> {
+    const socialPrefNames = ['네', '아니오', '가끔'];
+    const socialPrefs: SocialPrefs[] = [];
+
+    for (const name of socialPrefNames) {
+      let socialPref = await this.socialPrefsRepository.findOne({
+        where: { name },
+      });
+
+      if (!socialPref) {
+        socialPref = this.socialPrefsRepository.create({ name });
+        await this.socialPrefsRepository.save(socialPref);
+      }
+
+      socialPrefs.push(socialPref);
+    }
+
+    return socialPrefs;
+  }
+
+  /**
    * 개별 테스트 사용자 생성
    */
-  private async createTestUser(userData: any): Promise<void> {
+  private async createTestUser(
+    userData: any,
+    socialPrefs: SocialPrefs[],
+  ): Promise<void> {
     // 이미 존재하는 사용자인지 확인
     const existingUser = await this.userRepository.findOne({
       where: { user_id: userData.user_id },
@@ -354,6 +398,7 @@ export class TestUsersSeedService {
       birth_date: new Date(2000 + (25 - userData.age), 0, 1), // 대략적인 생년월일
       activity_radius_km: Math.floor(Math.random() * 10) + 5, // 5~15km
       contact_info: `kakao_${userData.user_id}`,
+      social_pref: socialPrefs[userData.social_pref_id],
       user: savedUser,
     });
     const savedProfile = await this.profilesRepository.save(profile);

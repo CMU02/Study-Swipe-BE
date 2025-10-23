@@ -24,6 +24,7 @@ export interface MatchResultDto {
   collab_style_description: string | null;
   meeting_type_name: string | null;
   smoking_status: string | null;
+  social_pref: string | null;
   preferred_member_count: string | null;
   study_tags: Array<{
     tag_name: string;
@@ -80,6 +81,7 @@ export function formatMatchResult(
     collab_style_description: profile.collab_style?.description || null,
     meeting_type_name: profile.meeting_type?.name || null,
     smoking_status: profile.smoking_status?.name || null,
+    social_pref: profile.social_pref?.name || null,
     preferred_member_count: profile.preferred_member_count
       ? `${profile.preferred_member_count.min_member_count}-${profile.preferred_member_count.max_member_count}명`
       : null,
